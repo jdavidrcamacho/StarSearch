@@ -12,6 +12,7 @@ class ESOquery(object):
         self.user = str(user)
         self.eso = Eso()
         self.eso.login(self.user)
+        self.eso.ROW_LIMIT = -1 #unlimited number of search results
         
     def searchStarDates(self, star):
         """
@@ -32,3 +33,18 @@ class ESOquery(object):
         for i, j in enumerate(instruments[0]):
             instrumentDict[j] = instruments[1][i]
         return instrumentDict
+    
+    def retriveStarData(self, star, destination):
+        """
+        Lets download the data
+        """
+        tableFeros = self.eso.query_instrument('FEROS', 
+                                               column_filters={'target': star})
+        self.eso.retrieve_data(star['Dataset ID'][7:8], destination='/home/camacho/Documents')
+        tableUves = self.eso.query_instrument('UVES', 
+                                               column_filters={'target': star})
+        tableHarps = self.eso.query_instrument('HARPS', 
+                                               column_filters={'target': star})
+        tableEspresso = self.eso.query_instrument('ESPRESSO', 
+                                               column_filters={'target': star})
+        
