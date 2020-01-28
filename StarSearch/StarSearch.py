@@ -14,6 +14,7 @@ class ESOquery(object):
         self.eso.login(self.user)
         self.eso.ROW_LIMIT = -1 #unlimited number of search results
         
+        
     def searchStarDates(self, star):
         """
         Lets see when the star was observed
@@ -21,6 +22,7 @@ class ESOquery(object):
         search = self.eso.query_main(column_filters={'target': star})
         result = np.array(search['Release_Date'])
         return result
+    
     
     def searchStarInstrument(self, star):
         """
@@ -34,17 +36,25 @@ class ESOquery(object):
             instrumentDict[j] = instruments[1][i]
         return instrumentDict
     
-    def retriveStarData(self, star, destination):
+    
+    def retriveStarData(self, star, downloadPath = None):
         """
         Lets download the data
         """
-        tableFeros = self.eso.query_instrument('FEROS', 
-                                               column_filters={'target': star})
-        self.eso.retrieve_data(star['Dataset ID'][7:8], destination='/home/camacho/Documents')
-        tableUves = self.eso.query_instrument('UVES', 
-                                               column_filters={'target': star})
-        tableHarps = self.eso.query_instrument('HARPS', 
-                                               column_filters={'target': star})
-        tableEspresso = self.eso.query_instrument('ESPRESSO', 
-                                               column_filters={'target': star})
+        checkInstruments = self.searchStarInstrument(star)
+        esoInst = np.array(['FEROS', 'UVES', 'HARPS', 'ESPRESSO'])
         
+        for i, j in enumerate(esoInst):
+            print('\n*** Searching for {0} results ***'.format(j))
+            if j in checkInstruments:
+                print('Downloading {0} data\n'.format(j))
+                table = self.eso.query_main(column_filters = {'instrument': j, 
+                                                              'target': star})
+                if downloadPath:
+                    self.eso.retrieve_data(table['Dataset ID'], 
+                                           destination = downloadPath)
+                else:
+                    self.eso.retrieve_data(table['Dataset ID'])
+            else:
+                print('No {0} data\n'.format(j))
+        return 0
