@@ -6,7 +6,16 @@ from astroquery.eso import Eso
 
 class ESOquery(object):
     """
-    Lets check what instruments observed a given star!!!
+    ESO query class
+    
+    Parameters
+    ----------
+    user: str
+        User name used in ESO website
+        
+    Returns
+    -------
+    
     """
     def __init__(self, user):
         self.user = str(user)
@@ -17,7 +26,17 @@ class ESOquery(object):
         
     def searchStarDates(self, star):
         """
-        Lets see when the star was observed
+        Checks the day the data was released 
+        
+        Parameters
+        ----------
+        star: str
+            Name of the star
+            
+        Returns
+        -------
+        result: array
+            Array with the date of the data release
         """
         search = self.eso.query_main(column_filters={'target': star})
         result = np.array(search['Release_Date'])
@@ -26,7 +45,17 @@ class ESOquery(object):
     
     def searchStarInstrument(self, star):
         """
-        Lets see what instrument observed the star
+        Checks which instruments where used
+        
+        Parameters
+        ----------
+        star: str
+            Name of the star
+            
+        Returns
+        -------
+        instrumentDict: dict
+            Instruments and number of observations
         """
         searchResult = self.eso.query_main(column_filters={'target': star})
         instruments = np.unique(np.array(searchResult['Instrument']), 
@@ -37,9 +66,22 @@ class ESOquery(object):
         return instrumentDict
     
     
-    def retriveStarData(self, star, downloadPath = None):
+    def retriveStarData(self, star, downloadPath = None , date = None):
         """
-        Lets download the data
+        Download ESO data
+        
+        Parameters
+        ----------
+        star: str
+            Name of the star
+        downloadPatch: str
+            Adress where to download data
+        date: str
+            Download only the data past a certain date
+            
+        Returns
+        -------
+        
         """
         checkInstruments = self.searchStarInstrument(star)
         esoInst = np.array(['FEROS', 'UVES', 'HARPS', 'ESPRESSO'])
