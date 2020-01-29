@@ -2,4 +2,4 @@
 # -*- coding: utf-8 -*-
 
 """ To import everything """
-from starsearch import archiveSearch
+from starsearch import rawArchive, phase3Archive 
