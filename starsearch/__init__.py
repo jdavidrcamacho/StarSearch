@@ -2,4 +2,4 @@
 # -*- coding: utf-8 -*-
 
 """ To import everything """
-from StarSearch import StarSearch
+from starsearch import archiveSearch

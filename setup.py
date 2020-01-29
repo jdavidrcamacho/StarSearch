@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup
 
-setup(name='StarSearch',
+setup(name='starsearch',
       version='0.1',
       description='Package to dig into the ESO archives',
       author='João Camacho',
       author_email='joao.camacho@astro.up.pt',
       license='MIT',
-      url='https://github.com/jdavidrcamacho/StarSearch',
-      packages=['StarSearch'],
+      url='https://github.com/jdavidrcamacho/starsearch',
+      packages=['starsearch'],
       install_requires=[
         'numpy',
         'astroquery',
