@@ -37,15 +37,41 @@ class ESOquery(object):
         -------
         result: array
             Array with the date of the data release
+            
+            
+        MJD-OBS is the modified Julian Date (JD - 2400000.5) of the start of the observation.
         """
         search = self.eso.query_main(column_filters={'target': star})
         result = np.array(search['Release_Date'])
         return result
     
     
+    def searchObservationDate(self, star):
+        """
+        Checks the modified Julian Date (JD - 2400000.5) of the start of the 
+        observation
+        
+        Parameters
+        ----------
+        star: str
+            Name of the star
+            
+        Returns
+        -------
+        result: array
+            Array with the start date of the observations
+            
+        """
+        search = self.eso.query_main(column_filters={'target': star})
+        result = np.array(search['MJD-OBS'])
+        return result
+    
+    
+    
     def searchInstrument(self, star):
         """
-        Checks which instruments where used
+        Checks which instruments where used for the given star and how many
+        observations it made
         
         Parameters
         ----------
