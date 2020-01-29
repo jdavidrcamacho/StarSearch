@@ -3,6 +3,8 @@
 import numpy as np
 #from astroquery.esocas import Eso
 from astroquery.eso import Eso
+from sys import maxsize
+#np.set_printoptions(threshold = maxsize)
 
 class ESOquery(object):
     """
@@ -67,7 +69,6 @@ class ESOquery(object):
         return result
     
     
-    
     def searchInstrument(self, star):
         """
         Checks which instruments where used for the given star and how many
@@ -102,8 +103,8 @@ class ESOquery(object):
             Name of the star
         instrument: str
             Instrument we are searching the darta
-        date: str
-            Download only the data past a certain date
+        date: float
+            Download spectra younger than date (in modified Julian Date)
         calib : str
             Retrieve associated calibration files: 'none' (default), 'raw' for
             raw calibrations, or 'processed' for processed calibrations.
@@ -119,6 +120,7 @@ class ESOquery(object):
             self.eso.retrieve_data(table['Dataset ID'], 
                                    destination = downloadPath,
                                    with_calib = calib)
+            return 0
         else:
             self.eso.retrieve_data(table['Dataset ID'], with_calib = calib)
         return 0
@@ -167,8 +169,8 @@ class ESOquery(object):
             Name of the star
         downloadPatch: str
             Adress where to download data
-        date: str
-            Download only the data past a certain date
+        date: float
+            Download spectra younger than date (in modified Julian Date)
         calib : str
             Retrieve associated calibration files: 'None' (default), 'raw' for
             raw calibrations, or 'processed' for processed calibrations.
