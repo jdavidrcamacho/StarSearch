@@ -20,10 +20,11 @@ class ESOquery(object):
     
     """
     def __init__(self, user):
-        self.user = str(user)
+        self.user = str(user) #user name 
         self.eso = Eso()
-        self.eso.login(self.user) #login in eso 
+        self.eso.login(self.user) #login to eso archive
         self.eso.ROW_LIMIT = -1 #unlimited number of search results
+        self.surveys = self.eso.list_surveys() #list of surveys
         
-        
-    
+    def searchSurveys(self, star):
+        return 0
