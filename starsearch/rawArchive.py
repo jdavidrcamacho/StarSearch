@@ -6,7 +6,7 @@ from astroquery.eso import Eso
 from sys import maxsize
 np.set_printoptions(threshold = maxsize)
 
-class ESOquery(object):
+class ESOquery():
     """
     ESO query class
     
