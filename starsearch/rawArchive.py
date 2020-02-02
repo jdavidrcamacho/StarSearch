@@ -69,7 +69,7 @@ class ESOquery():
         return result
     
     
-    def searchInstrument(self, star):
+    def searchInstruments(self, star):
         """
         Checks which instruments where used for the given star and how many
         observations it made
@@ -148,7 +148,7 @@ class ESOquery():
         """
         checkInstruments = self.searchInstrument(star)
         esoInst = np.array(['FEROS', 'UVES', 'HARPS', 'ESPRESSO'])
-        for i, j in enumerate(esoInst):
+        for _, j in enumerate(esoInst):
             print('\n*** Searching for {0} results ***\n'.format(j))
             if j in checkInstruments:
                 self._searchAndDownload(star, j, downloadPath, date, calib)
@@ -181,7 +181,7 @@ class ESOquery():
         """
         checkInstruments = self.searchInstrument(star)
         esoInst = np.array(['FEROS'])
-        for i, j in enumerate(esoInst):
+        for _, j in enumerate(esoInst):
             print('\n*** Searching for {0} results ***\n'.format(j))
             if j in checkInstruments:
                 self._searchAndDownload(star, j, downloadPath, date, calib)
@@ -214,7 +214,7 @@ class ESOquery():
         """
         checkInstruments = self.searchInstrument(star)
         esoInst = np.array(['UVES'])
-        for i, j in enumerate(esoInst):
+        for _, j in enumerate(esoInst):
             print('\n*** Searching for {0} results ***\n'.format(j))
             if j in checkInstruments:
                 self._searchAndDownload(star, j, downloadPath, date, calib)
@@ -247,7 +247,7 @@ class ESOquery():
         """
         checkInstruments = self.searchInstrument(star)
         esoInst = np.array(['HARPS'])
-        for i, j in enumerate(esoInst):
+        for _, j in enumerate(esoInst):
             print('\n*** Searching for {0} results ***\n'.format(j))
             if j in checkInstruments:
                 self._searchAndDownload(star, j, downloadPath, date, calib)
@@ -280,7 +280,7 @@ class ESOquery():
         """
         checkInstruments = self.searchInstrument(star)
         esoInst = np.array(['ESPRESSO'])
-        for i, j in enumerate(esoInst):
+        for _, j in enumerate(esoInst):
             print('\n*** Searching for {0} results ***\n'.format(j))
             if j in checkInstruments:
                 self._searchAndDownload(star, j, downloadPath, date, calib)

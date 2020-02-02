@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 #from astroquery.esocas import Eso
-from astroquery.eso import Eso
+from astroquery.esocas import Eso
 from sys import maxsize
 np.set_printoptions(threshold = maxsize)
 
@@ -28,7 +28,7 @@ class ESOquery():
         self.instruments = ['FEROS', 'UVES', 'HARPS', 'ESPRESSO']
         
         
-    def searchInstrument(self, star):
+    def searchInstruments(self, star):
         """
         Checks which instruments where used for the given star and how many
         observations it made
@@ -53,8 +53,20 @@ class ESOquery():
     
     
     def searchStar(self, star):
-        url = "http://archive.eso.org/wdb/wdb/adp/phase3_spectral/form"
-        result = self.eso.query_surveys(instrument = self.instruments, 
+        #url = "http://archive.eso.org/wdb/wdb/adp/phase3_spectral/form"
+        search = self.eso.query_surveys(instrument = 'HARPS', 
                                         target = star) 
         
-        return result
+
+        # checkInstruments = self.searchInstrument(star)
+        # esoInst = np.array(['FEROS', 'UVES', 'HARPS', 'ESPRESSO'])
+        # for i, j in enumerate(esoInst):
+        #     print('\n*** Searching for {0} results ***\n'.format(j))
+        #     if j in checkInstruments:
+        #         self._searchAndDownload(star, j, downloadPath, date, calib)
+        #     else:
+        #         print('No {0} data\n'.format(j))
+        # print('\n*** Done ***\n')
+        # return 0
+
+        return search
