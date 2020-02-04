@@ -64,7 +64,7 @@ class ESOquery():
 
 
     def _searchAndDownload(self, star, instrument, downloadPath=None, date=None):
-        starARCFILE = np.array(self.searchStar(star)['ARCFILE'])
+        starARCFILE = np.array(self.searchStar(star, instrument)['ARCFILE'])
         if downloadPath:
             self.eso.retrieve_data(datasets = starARCFILE, 
                                    destination = downloadPath)
