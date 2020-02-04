@@ -24,7 +24,8 @@ class ESOquery():
         self.eso = Eso()
         self.eso.login(self.user) #login in eso 
         self.eso.ROW_LIMIT = -1 #unlimited number of search results
-        
+        self.instruments = np.array(['FEROS', 'UVES', 'HARPS', 'ESPRESSO'])
+
         
     def searchReleaseDate(self, star):
         """
@@ -146,9 +147,8 @@ class ESOquery():
         -------
         
         """
-        checkInstruments = self.searchInstrument(star)
-        esoInst = np.array(['FEROS', 'UVES', 'HARPS', 'ESPRESSO'])
-        for _, j in enumerate(esoInst):
+        checkInstruments = self.searchInstruments(star)
+        for _, j in enumerate(self.instruments):
             print('\n*** Searching for {0} results ***\n'.format(j))
             if j in checkInstruments:
                 self._searchAndDownload(star, j, downloadPath, date, calib)
@@ -179,7 +179,7 @@ class ESOquery():
         -------
         
         """
-        checkInstruments = self.searchInstrument(star)
+        checkInstruments = self.searchInstruments(star)
         esoInst = np.array(['FEROS'])
         for _, j in enumerate(esoInst):
             print('\n*** Searching for {0} results ***\n'.format(j))
@@ -212,7 +212,7 @@ class ESOquery():
         -------
         
         """
-        checkInstruments = self.searchInstrument(star)
+        checkInstruments = self.searchInstruments(star)
         esoInst = np.array(['UVES'])
         for _, j in enumerate(esoInst):
             print('\n*** Searching for {0} results ***\n'.format(j))
@@ -245,7 +245,7 @@ class ESOquery():
         -------
         
         """
-        checkInstruments = self.searchInstrument(star)
+        checkInstruments = self.searchInstruments(star)
         esoInst = np.array(['HARPS'])
         for _, j in enumerate(esoInst):
             print('\n*** Searching for {0} results ***\n'.format(j))
@@ -266,7 +266,7 @@ class ESOquery():
         ----------
         star: str
             Name of the star
-        downloadPatch: str
+        downloadPath: str
             Adress where to download data
         date: str
             Download only the data past a certain date
@@ -278,7 +278,7 @@ class ESOquery():
         -------
         
         """
-        checkInstruments = self.searchInstrument(star)
+        checkInstruments = self.searchInstruments(star)
         esoInst = np.array(['ESPRESSO'])
         for _, j in enumerate(esoInst):
             print('\n*** Searching for {0} results ***\n'.format(j))

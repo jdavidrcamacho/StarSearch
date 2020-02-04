@@ -20,17 +20,17 @@ class ESOquery():
     
     """
     def __init__(self, user):
-        self.user = str(user) #user name 
+        self.user = user #user name 
         self.eso = Eso()
         self.eso.login(self.user) #login to eso archive
         self.eso.ROW_LIMIT = -1 #unlimited number of search results = -1
         self.surveys = self.eso.list_surveys() #list of available surveys
-        self.instruments = ['FEROS', 'UVES', 'HARPS', 'ESPRESSO']
+        self.instruments = np.array(['FEROS', 'UVES', 'HARPS', 'ESPRESSO'])
         
         
     def searchInstruments(self, star):
         """
-        Checks which instruments where used for the given star and how many
+        Checks which instruments observed the given star and how many
         observations it made
         
         Parameters
@@ -52,21 +52,53 @@ class ESOquery():
         return instrumentDict
     
     
-    def searchStar(self, star):
+    def searchStar(self, star, instrument=None):
         #url = "http://archive.eso.org/wdb/wdb/adp/phase3_spectral/form"
-        search = self.eso.query_surveys(instrument = 'HARPS', 
-                                        target = star) 
-        
-
-        # checkInstruments = self.searchInstrument(star)
-        # esoInst = np.array(['FEROS', 'UVES', 'HARPS', 'ESPRESSO'])
-        # for i, j in enumerate(esoInst):
-        #     print('\n*** Searching for {0} results ***\n'.format(j))
-        #     if j in checkInstruments:
-        #         self._searchAndDownload(star, j, downloadPath, date, calib)
-        #     else:
-        #         print('No {0} data\n'.format(j))
-        # print('\n*** Done ***\n')
-        # return 0
-
+        if instrument:
+            search = self.eso.query_surveys(instrument = instrument, 
+                                            target = star) 
+        else:
+            search = self.eso.query_surveys(instrument = self.instruments, 
+                                            target = star) 
         return search
+
+
+    def _searchAndDownload(self, star, instrument, downloadPath=None, date=None):
+        starARCFILE = np.array(self.searchStar(star)['ARCFILE'])
+        if downloadPath:
+            self.eso.retrieve_data(datasets = starARCFILE, 
+                                   destination = downloadPath)
+            return 0
+        else:
+            self.eso.retrieve_data(datasets = starARCFILE)
+        return 0
+
+
+
+    def getHARPSdata(self, star, downloadPath = None , date = None):
+        """
+        Download HARPS spectra of a given star
+        
+        Parameters
+        ----------
+        star: str
+            Name of the star
+        downloadPath: str
+            Adress where to download data
+        date: str
+            Download only the data younger than a certain date
+            
+        Returns
+        -------
+        
+        """
+        checkInstruments = self.searchInstruments(star)
+        esoInst = np.array(['HARPS'])
+        for _, j in enumerate(esoInst):
+            print('\n*** Searching for {0} results ***\n'.format(j))
+            if j in checkInstruments:
+                self._searchAndDownload(star, j, downloadPath, date)
+            else:
+                print('No {0} data\n'.format(j))
+        print('\n*** Done ***\n')
+        return 0
