@@ -20,7 +20,7 @@ class ESOquery():
     
     """
     def __init__(self, user):
-        self.user = str(user)
+        self.user = user
         self.eso = Eso()
         self.eso.login(self.user) #login in eso 
         self.eso.ROW_LIMIT = -1 #unlimited number of search results
