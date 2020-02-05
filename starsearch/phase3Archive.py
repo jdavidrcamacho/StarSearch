@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import numpy as np
-#from astroquery.esocas import Eso
+#from astroquery.eso import Eso
 from astroquery.esocas import Eso
+from astropy.time import Time
 from sys import maxsize
 np.set_printoptions(threshold = maxsize)
 
@@ -17,7 +18,6 @@ class ESOquery():
         
     Returns
     -------
-    
     """
     def __init__(self, user):
         self.user = user #user name 
@@ -32,6 +32,8 @@ class ESOquery():
         """
         Checks which instruments observed the given star and how many
         observations it made
+        WARNING: The number of observations might be different from the number
+        of spectra available to download in phase 3
         
         Parameters
         ----------
@@ -51,9 +53,52 @@ class ESOquery():
             instrumentDict[j] = instruments[1][i]
         return instrumentDict
     
+
+    def searchNumberByInstrument(self, star, instrument=None):
+        """
+        Checks how many spectra is available to downloan for a given instrument
+        
+        Parameters
+        ----------
+        star: str
+            Name of the star
+        instrument: str
+            Name of the instrument, None for default instruments
+            
+        Returns
+        -------
+        instrumentDict: dict
+            Instruments and number of observations
+        """
+        searchStar = self.searchStar(star)
+        instrumentDict = dict()
+        if instrument:
+            number = np.sum(searchStar['Instrument'] == instrument)
+            instrumentDict[instrument] = number
+            return instrumentDict
+        else:
+            for _, j in enumerate(self.instruments):
+                number = np.sum(searchStar['Instrument'] == j)
+                instrumentDict[j] = number
+            return instrumentDict
     
+
     def searchStar(self, star, instrument=None):
-        #url = "http://archive.eso.org/wdb/wdb/adp/phase3_spectral/form"
+        """
+        Return phase 3 ESO query for given star and a given instrument
+
+        Parameters
+        ----------
+        star: str
+            Name of the star
+        instrument: str
+            Name of the instrument, None for default instruments
+            
+        Returns
+        -------
+        instrumentDict: dict
+            Instruments and number of observations
+        """
         if instrument:
             search = self.eso.query_surveys(instrument = instrument, 
                                             target = star) 
@@ -61,6 +106,59 @@ class ESOquery():
             search = self.eso.query_surveys(instrument = self.instruments, 
                                             target = star) 
         return search
+
+    def searchObservationDate(self, star, instrument=None):
+        """
+        Searches for the modified Julian Date (JD - 2400000.5) of the 
+        observation
+        
+        Parameters
+        ----------
+        star: str
+            Name of the star
+        instrument: str
+            Name of the instrument, None for default instruments
+            
+        Returns
+        -------
+        result: array
+            Array with the start date of the observations
+        """
+        if instrument:
+            search = self.eso.query_surveys(instrument = instrument, 
+                                            target = star) 
+        else:
+            search = self.eso.query_surveys(instrument = self.instruments, 
+                                            target = star) 
+        result = Time(search['Date Obs'], format='isot', scale='utc').mjd
+        return result
+
+
+    def searchSNR(self, star, instrument=None):
+        """
+        Return the signal-to-noise ration on the available spectra from a given
+        instrument on a given star
+        
+        Parameters
+        ----------
+        star: str
+            Name of the star
+        instrument: str
+            Name of the instrument, None for default instruments
+
+        Returns
+        -------
+        SNR: array
+            Array with the signal-to-noise ratios
+        """
+        if instrument:
+            search = self.eso.query_surveys(instrument = instrument, 
+                                            target = star) 
+        else:
+            search = self.eso.query_surveys(instrument = self.instruments, 
+                                            target = star) 
+        SNR = np.array(search['SNR (spectra)'])
+        return SNR
 
 
     def _searchAndDownload(self, star, instrument, downloadPath=None, date=None):
@@ -72,7 +170,6 @@ class ESOquery():
         else:
             self.eso.retrieve_data(datasets = starARCFILE)
         return 0
-
 
 
     def getHARPSdata(self, star, downloadPath = None , date = None):
@@ -89,8 +186,7 @@ class ESOquery():
             Download only the data younger than a certain date
             
         Returns
-        -------
-        
+        ------
         """
         checkInstruments = self.searchInstruments(star)
         esoInst = np.array(['HARPS'])

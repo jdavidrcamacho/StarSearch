@@ -17,7 +17,6 @@ class ESOquery():
         
     Returns
     -------
-    
     """
     def __init__(self, user):
         self.user = user
@@ -29,7 +28,7 @@ class ESOquery():
         
     def searchReleaseDate(self, star):
         """
-        Checks the date the data was released 
+        Searches the date the data was released 
         
         Parameters
         ----------
@@ -40,9 +39,6 @@ class ESOquery():
         -------
         result: array
             Array with the date of the data release
-            
-            
-        MJD-OBS is the modified Julian Date (JD - 2400000.5) of the start of the observation.
         """
         search = self.eso.query_main(column_filters={'target': star})
         result = np.array(search['Release_Date'])
@@ -51,8 +47,8 @@ class ESOquery():
     
     def searchObservationDate(self, star):
         """
-        Checks the modified Julian Date (JD - 2400000.5) of the start of the 
-        observation
+        Searches for the modified Julian Date (JD - 2400000.5) of the start of 
+        the observation
         
         Parameters
         ----------
@@ -63,7 +59,6 @@ class ESOquery():
         -------
         result: array
             Array with the start date of the observations
-            
         """
         search = self.eso.query_main(column_filters={'target': star})
         result = np.array(search['MJD-OBS'])
@@ -103,7 +98,7 @@ class ESOquery():
         star: str
             Name of the star
         instrument: str
-            Instrument we are searching the darta
+            Instrument we are searching the data
         date: float
             Download spectra younger than date (in modified Julian Date)
         calib : str
@@ -112,7 +107,6 @@ class ESOquery():
             
         Returns
         -------
-        
         """
         print('Downloading {0} data\n'.format(instrument))
         table = self.eso.query_main(column_filters = {'instrument': instrument, 
@@ -145,7 +139,6 @@ class ESOquery():
             
         Returns
         -------
-        
         """
         checkInstruments = self.searchInstruments(star)
         for _, j in enumerate(self.instruments):
@@ -177,7 +170,6 @@ class ESOquery():
             
         Returns
         -------
-        
         """
         checkInstruments = self.searchInstruments(star)
         esoInst = np.array(['FEROS'])
@@ -210,7 +202,6 @@ class ESOquery():
             
         Returns
         -------
-        
         """
         checkInstruments = self.searchInstruments(star)
         esoInst = np.array(['UVES'])
@@ -243,7 +234,6 @@ class ESOquery():
             
         Returns
         -------
-        
         """
         checkInstruments = self.searchInstruments(star)
         esoInst = np.array(['HARPS'])
@@ -276,7 +266,6 @@ class ESOquery():
             
         Returns
         -------
-        
         """
         checkInstruments = self.searchInstruments(star)
         esoInst = np.array(['ESPRESSO'])
