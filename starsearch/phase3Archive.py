@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import numpy as np
-#from astroquery.eso import Eso
-from astroquery.esocas import Eso
+from astroquery.eso import Eso
+#from astroquery.esocas import Eso
 from astropy.time import Time
 from sys import maxsize
 np.set_printoptions(threshold = maxsize)
@@ -100,12 +100,13 @@ class ESOquery():
             Instruments and number of observations
         """
         if instrument:
-            search = self.eso.query_surveys(instrument = instrument, 
+            search = self.eso.query_surveys(surveys = instrument, 
                                             target = star) 
         else:
-            search = self.eso.query_surveys(instrument = self.instruments, 
+            search = self.eso.query_surveys(surveys = self.instruments, 
                                             target = star) 
         return search
+
 
     def searchObservationDate(self, star, instrument=None):
         """
@@ -161,15 +162,92 @@ class ESOquery():
         return SNR
 
 
-    def _searchAndDownload(self, star, instrument, downloadPath=None, date=None):
+    def _searchAndDownload(self, star, instrument=None, 
+                            downloadPath=None, date=None):
         starARCFILE = np.array(self.searchStar(star, instrument)['ARCFILE'])
         if downloadPath:
             self.eso.retrieve_data(datasets = starARCFILE, 
                                    destination = downloadPath)
-            return 0
         else:
             self.eso.retrieve_data(datasets = starARCFILE)
-        return 0
+
+
+    def getALLdata(self, star, downloadPath = None , date = None):
+        """
+        Download ESO spectra of a given star
+        
+        Parameters
+        ----------
+        star: str
+            Name of the star
+        downloadPatch: str
+            Adress where to download data
+        date: str
+            Download only the data past a certain date
+            
+        Returns
+        -------
+        """
+        checkInstruments = self.searchInstruments(star)
+        for _, j in enumerate(self.instruments):
+            print('\n*** Searching for {0} results ***\n'.format(j))
+            if j in checkInstruments:
+                self._searchAndDownload(star, j, downloadPath, date)
+            else:
+                print('No {0} data\n'.format(j))
+        print('\n*** Done ***\n')
+
+
+    def getFEROSdata(self, star, downloadPath = None , date = None):
+        """
+        Download FEROS spectra of a given star
+        
+        Parameters
+        ----------
+        star: str
+            Name of the star
+        downloadPath: str
+            Adress where to download data
+        date: str
+            Download only the data younger than a certain date
+            
+        Returns
+        ------
+        """
+        checkInstruments = self.searchInstruments(star)
+        for _, j in enumerate(np.array(['FEROS'])):
+            print('\n*** Searching for {0} results ***\n'.format(j))
+            if j in checkInstruments:
+                self._searchAndDownload(star, j, downloadPath, date)
+            else:
+                print('No {0} data\n'.format(j))
+        print('\n*** Done ***\n')
+
+
+    def getUVESdata(self, star, downloadPath = None , date = None):
+        """
+        Download UVES spectra of a given star
+        
+        Parameters
+        ----------
+        star: str
+            Name of the star
+        downloadPath: str
+            Adress where to download data
+        date: str
+            Download only the data younger than a certain date
+            
+        Returns
+        ------
+        """
+        checkInstruments = self.searchInstruments(star)
+        for _, j in enumerate(np.array(['UVES'])):
+            print('\n*** Searching for {0} results ***\n'.format(j))
+            if j in checkInstruments:
+                self._searchAndDownload(star, j, downloadPath, date)
+            else:
+                print('No {0} data\n'.format(j))
+        print('\n*** Done ***\n')
 
 
     def getHARPSdata(self, star, downloadPath = None , date = None):
@@ -189,12 +267,10 @@ class ESOquery():
         ------
         """
         checkInstruments = self.searchInstruments(star)
-        esoInst = np.array(['HARPS'])
-        for _, j in enumerate(esoInst):
+        for _, j in enumerate(np.array(['HARPS'])):
             print('\n*** Searching for {0} results ***\n'.format(j))
             if j in checkInstruments:
                 self._searchAndDownload(star, j, downloadPath, date)
             else:
                 print('No {0} data\n'.format(j))
         print('\n*** Done ***\n')
-        return 0
