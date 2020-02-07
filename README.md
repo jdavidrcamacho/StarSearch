@@ -10,5 +10,6 @@ To install:
 ### Tasks
 
 - [x] Download spectra considering a given instrument
-- [ ] Download spectra considering a given date
-- [ ] Download spectra considering a given SNR
+- [x] Download spectra considering a given date
+- [x] Download spectra considering a given SNR
+- [ ] Test everything

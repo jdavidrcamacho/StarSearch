@@ -82,7 +82,7 @@ class ESOquery():
             return instrumentDict
         
         
-    def searchStar(self, star, instrument=None):
+    def searchStar(self, star, instrument=None, date=None, SNR=None):
         """
         Return phase 3 ESO query for given star and a given instrument
         
@@ -92,18 +92,32 @@ class ESOquery():
             Name of the star
         instrument: str
             Name of the instrument, None for default instruments
+        date: str
+            Date to search for obvervation (FORMAT: 'YYYY-MM-DD')
+            If None: date = '1990-01-23'
+        SNR: float
+            Signal to noise ratio. 
+            If None: SNR = 30
             
         Returns
         -------
         search: table
             Result of the query on ESO arquive
         """
+        if not date: 
+            date = Time('1990-01-23')
+        date = Time(date)
+        if not SNR: 
+            SNR = 30
+            
         if instrument:
             search = self.eso.query_surveys(surveys = instrument, 
                                             target = star)
         else:
             search = self.eso.query_surveys(surveys = list(self.instruments), 
                                             target = star)
+        search.remove_rows(Time(search['Date Obs']) < date) #Date criteria
+        search.remove_rows(search['SNR (spectra)'] < SNR) #SNR critetia
         return search
     
     
@@ -134,10 +148,9 @@ class ESOquery():
         return result
     
     
-    def searchSNR(self, star, instrument=None):
+    def searchByDate(self, star, instrument=None, date=None):
         """
-        Return the signal-to-noise ration on the available spectra from a given
-        instrument on a given star
+        Searches for spectra of a given star past a certain date of observation
         
         Parameters
         ----------
@@ -145,25 +158,54 @@ class ESOquery():
             Name of the star
         instrument: str
             Name of the instrument, None for default instruments
+        date: str
+            Date to search for obvervation (FORMAT: 'YYYY-MM-DD')
+            If None: date = '1990-01-23'
+            
+        Returns
+        -------
+        search: table
+            Result of the query on ESO arquive
+        """
+        if not date: 
+            date = Time('1990-01-23')
+        date = Time(date)
+        search = self.searchStar(star, instrument)
+        search.remove_rows(Time(search['Date Obs']) < date)
+        return search
+    
+    
+    def searchBySNR(self, star, instrument=None, SNR = None):
+        """
+        Return spectra with a signal-to-noise ratio higher than a certain 
+        SNR value
+        
+        Parameters
+        ----------
+        star: str
+            Name of the star
+        instrument: str
+            Name of the instrument, None for default instruments
+        SNR: float
+            Signal to noise ratio. 
+            If None: SNR = 30
             
         Returns
         -------
         SNR: array
             Array with the signal-to-noise ratios
         """
-        if instrument:
-            search = self.eso.query_surveys(instrument = instrument, 
-                                            target = star) 
-        else:
-            search = self.eso.query_surveys(instrument = self.instruments, 
-                                            target = star) 
-        SNR = np.array(search['SNR (spectra)'])
-        return SNR
+        if not SNR: 
+            SNR = 30
+        search = self.searchStar(star, instrument)
+        search.remove_rows(search['SNR (spectra)'] < SNR)
+        return search
     
     
     def _searchAndDownload(self, star, instrument=None, 
-                            downloadPath=None, date=None):
-        starARCFILE = np.array(self.searchStar(star, instrument)['ARCFILE'])
+                            downloadPath=None, date=None, SNR=None):
+        starARCFILE = np.array(self.searchStar(star, instrument, 
+                                               date, SNR)['ARCFILE'])
         if downloadPath:
             self.eso.retrieve_data(datasets = starARCFILE, 
                                    destination = downloadPath)
@@ -171,7 +213,8 @@ class ESOquery():
             self.eso.retrieve_data(datasets = starARCFILE)
             
             
-    def _getData(self, star, instrument, downloadPath = None , date = None):
+    def _getData(self, star, instrument, downloadPath = None , date = None,
+                 SNR = None):
         """
         Downloads spectra from a given instrument of a given star 
         
@@ -193,13 +236,13 @@ class ESOquery():
         for _, j in enumerate(np.array([instrument])):
             print('\n*** Searching for {0} results ***\n'.format(j))
             if j in checkInstruments:
-                self._searchAndDownload(star, j, downloadPath, date)
+                self._searchAndDownload(star, j, downloadPath, date, SNR)
             else:
                 print('No {0} data\n'.format(j))
         print('\n*** Done ***\n')
         
         
-    def getALLdata(self, star, downloadPath = None , date = None):
+    def getALLdata(self, star, downloadPath = None , date = None, SNR = None):
         """
         Download ESO spectra of a given star
         
@@ -210,7 +253,11 @@ class ESOquery():
         downloadPatch: str
             Adress where to download data
         date: str
-            Download only the data past a certain date
+            Download only the data past a certain date (FORMAT: 'YYYY-MM-DD')
+            If None: date = '1990-01-23'
+        SNR: float
+            Signal to noise ratio. 
+            If None: SNR = 30
             
         Returns
         -------
@@ -219,14 +266,14 @@ class ESOquery():
         for _, j in enumerate(self.instruments):
             print('\n*** Searching for {0} results ***\n'.format(j))
             if j in checkInstruments:
-                self._searchAndDownload(star, j, downloadPath, date)
+                self._searchAndDownload(star, j, downloadPath, date, SNR)
             else:
                 print('No {0} data\n'.format(j))
         print('\n*** Done ***\n')
 
         
         
-    def getFEROSdata(self, star, downloadPath = None , date = None):
+    def getFEROSdata(self, star, downloadPath = None , date = None, SNR = None):
         """
         Download FEROS spectra of a given star
         
@@ -237,7 +284,11 @@ class ESOquery():
         downloadPath: str
             Adress where to download data
         date: str
-            Download only the data younger than a certain date
+            Download only the data oast than a certain date (FORMAT: 'YYYY-MM-DD')
+            If None: date = '1990-01-23'
+        SNR: float
+            Signal to noise ratio. 
+            If None: SNR = 30
             
         Returns
         ------
@@ -246,13 +297,13 @@ class ESOquery():
         for _, j in enumerate(np.array(['FEROS'])):
             print('\n*** Searching for {0} results ***\n'.format(j))
             if j in checkInstruments:
-                self._searchAndDownload(star, j, downloadPath, date)
+                self._searchAndDownload(star, j, downloadPath, date, SNR)
             else:
                 print('No {0} data\n'.format(j))
         print('\n*** Done ***\n')
         
         
-    def getUVESdata(self, star, downloadPath = None , date = None):
+    def getUVESdata(self, star, downloadPath = None , date = None, SNR = None):
         """
         Download UVES spectra of a given star
         
@@ -263,7 +314,11 @@ class ESOquery():
         downloadPath: str
             Adress where to download data
         date: str
-            Download only the data younger than a certain date
+            Download only the data past than a certain date (FORMAT: 'YYYY-MM-DD')
+            If None: date = '1990-01-23'
+        SNR: float
+            Signal to noise ratio. 
+            If None: SNR = 30
             
         Returns
         ------
@@ -272,13 +327,13 @@ class ESOquery():
         for _, j in enumerate(np.array(['UVES'])):
             print('\n*** Searching for {0} results ***\n'.format(j))
             if j in checkInstruments:
-                self._searchAndDownload(star, j, downloadPath, date)
+                self._searchAndDownload(star, j, downloadPath, date, SNR)
             else:
                 print('No {0} data\n'.format(j))
         print('\n*** Done ***\n')
         
         
-    def getHARPSdata(self, star, downloadPath = None , date = None):
+    def getHARPSdata(self, star, downloadPath = None , date = None, SNR = None):
         """
         Download HARPS spectra of a given star
         
@@ -289,7 +344,11 @@ class ESOquery():
         downloadPath: str
             Adress where to download data
         date: str
-            Download only the data younger than a certain date
+            Download only the data past than a certain date (FORMAT: 'YYYY-MM-DD')
+            If None: date = '1990-01-23'
+        SNR: float
+            Signal to noise ratio. 
+            If None: SNR = 30
             
         Returns
         ------
@@ -298,13 +357,13 @@ class ESOquery():
         for _, j in enumerate(np.array(['HARPS'])):
             print('\n*** Searching for {0} results ***\n'.format(j))
             if j in checkInstruments:
-                self._searchAndDownload(star, j, downloadPath, date)
+                self._searchAndDownload(star, j, downloadPath, date, SNR)
             else:
                 print('No {0} data\n'.format(j))
         print('\n*** Done ***\n')
         
         
-    def getESPRESSOdata(self, star, downloadPath = None , date = None):
+    def getESPRESSOdata(self, star, downloadPath = None , date = None, SNR = None):
         """
         Download ESPRESSO spectra of a given star
         
@@ -315,7 +374,11 @@ class ESOquery():
         downloadPath: str
             Adress where to download data
         date: str
-            Download only the data younger than a certain date
+            Download only the data past than a certain date (FORMAT: 'YYYY-MM-DD')
+            If None: date = '1990-01-23'
+        SNR: float
+            Signal to noise ratio. 
+            If None: SNR = 30
             
         Returns
         ------
@@ -324,7 +387,7 @@ class ESOquery():
         for _, j in enumerate(np.array(['ESPRESSO'])):
             print('\n*** Searching for {0} results ***\n'.format(j))
             if j in checkInstruments:
-                self._searchAndDownload(star, j, downloadPath, date)
+                self._searchAndDownload(star, j, downloadPath, date, SNR)
             else:
                 print('No {0} data\n'.format(j))
         print('\n*** Done ***\n')
