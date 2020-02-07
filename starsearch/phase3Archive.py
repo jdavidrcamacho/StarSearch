@@ -53,9 +53,9 @@ class ESOquery():
         return instrumentDict
     
     
-    def searchNumberByInstrument(self, star, instrument=None):
+    def searchInstrumentSpectra(self, star, instrument=None):
         """
-        Checks how many spectra is available to downloan for a given instrument
+        Checks how many spectra is available to downloand for a given instrument
         
         Parameters
         ----------
@@ -95,8 +95,8 @@ class ESOquery():
             
         Returns
         -------
-        instrumentDict: dict
-            Instruments and number of observations
+        search: table
+            Result of the query on ESO arquive
         """
         if instrument:
             search = self.eso.query_surveys(surveys = instrument, 
