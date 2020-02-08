@@ -202,8 +202,8 @@ class ESOquery():
         return search
     
     
-    def _searchAndDownload(self, star, instrument=None, 
-                            downloadPath=None, date=None, SNR=None):
+    def _searchAndDownload(self, star, instrument = None, 
+                            downloadPath = None, date = None, SNR = None):
         starARCFILE = np.array(self.searchStar(star, instrument, 
                                                date, SNR)['ARCFILE'])
         if downloadPath:
@@ -392,3 +392,58 @@ class ESOquery():
                 print('No {0} data\n'.format(j))
         print('\n*** Done ***\n')
         
+        
+    def readList(self, filename, instrument = None, downloadPath = None, 
+                 date = None, SNR = None):
+        """
+        Load SWEET-Cat catalogue. Basically a copy of np.loadtxt() but 
+        thinking in using it on SWEET-Cat.
+        Each row in the text file must have the same number of values.
+    
+        Parameters
+        ----------
+        filename : str
+            File, filename, or generator to read. 
+            filename = '~/WEBSITE_online.rdb'
+            
+        Returns
+        -------
+        out : ndarray
+            Data read from the text file.
+        """
+        stars = np.loadtxt('WEBSITE_online.rdb', dtype=str, delimiter='\t', 
+                           usecols=[0], skiprows=1)
+        
+        for i, j in enumerate(stars):
+            print('***', j, '***')
+            try:
+                star = self.searchStar(j, instrument, date, SNR)
+                print()
+            except:
+                print('     Star not found in archive!\n')
+        return stars
+        
+    
+    def _remove_planet(self, name):
+        """
+        Remove the trailing b, c, d, etc in the stellar name, no sure if it is
+        going to be necessary
+        
+        Parameters
+        ----------
+        name: str
+            Name of the star+planet
+            
+        Returns
+        -------
+        name: str
+            Name  of the star
+        """
+        planets = 'bcdefghijB'
+        for planet in planets:
+            if name.endswith(' %s' % planet):
+                return name[:-2]
+        # some exoplanets have .01 or .02 in the name 
+        if name.endswith('.01') or name.endswith('.02') or name.endswith('.2'):
+            return name[:-3]                
+        return name
