@@ -1,7 +1,7 @@
 
 # esoFile
 
-Copy of astroquey.eso
+Copy of astroquery.eso
 
 ### Changes
 phase 3 ESO archive now downloads spectra from
