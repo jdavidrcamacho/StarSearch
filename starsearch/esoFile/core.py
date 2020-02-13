@@ -1,4 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+# COpied from astroquery package
 from __future__ import print_function
 import time
 import sys
