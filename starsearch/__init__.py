@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-""" To import everything """
+""" 
+Welcome to starsearch
+"""
 from starsearch import rawArchive, phase3Archive 

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import numpy as np
-from astroquery.esocas import Eso
+import os
 from astropy.time import Time
 from sys import maxsize
 np.set_printoptions(threshold = maxsize)
+from esoFile import Eso
+
 
 class ESOquery():
     """
@@ -117,7 +119,7 @@ class ESOquery():
             search = self.eso.query_surveys(surveys = list(self.instruments), 
                                             target = star)
         search.remove_rows(Time(search['Date Obs']) < date) #Date criteria
-        search.remove_rows(search['SNR (spectra)'] < SNR) #SNR critetia
+        search.remove_rows(search['SNR'] < SNR) #SNR critetia
         return search
     
     
@@ -198,7 +200,7 @@ class ESOquery():
         if not SNR: 
             SNR = 30
         search = self.searchStar(star, instrument)
-        search.remove_rows(search['SNR (spectra)'] < SNR)
+        search.remove_rows(search['SNR'] < SNR)
         return search
     
     
@@ -377,7 +379,7 @@ class ESOquery():
             Download only the data past than a certain date (FORMAT: 'YYYY-MM-DD')
             If None: date = '1990-01-23'
         SNR: float
-            Signal to noise ratio. 
+            Signal to noise ratio.
             If None: SNR = 30
             
         Returns
@@ -393,37 +395,103 @@ class ESOquery():
         print('\n*** Done ***\n')
         
         
-    def readList(self, filename, instrument = None, downloadPath = None, 
+    def readFILE(self, filename, instrument = None, downloadPath = None, 
                  date = None, SNR = None):
         """
-        Load SWEET-Cat catalogue. Basically a copy of np.loadtxt() but 
+        Load SWEET-Cat stars catalogue. Basically a copy of np.loadtxt() but 
         thinking in using it on SWEET-Cat.
-        Each row in the text file must have the same number of values.
+        Each row in the text file must have the same number of columns.
     
         Parameters
         ----------
         filename : str
             File, filename, or generator to read. 
             filename = '~/WEBSITE_online.rdb'
+        instrument: str
+            Name of the instrument, None for default instruments
+        downloadPath: str
+            Adress where to download data
+        date: str
+            Download only the data past than a certain date (FORMAT: 'YYYY-MM-DD')
+            If None: date = '1990-01-23'
+        SNR: float
+            Signal to noise ratio.
+            If None: SNR = 30
             
         Returns
         -------
-        out : ndarray
-            Data read from the text file.
+        starsInArchive : array
+            List of stars found on ESO archive
+        starsNotInArchive: array
+            List of stars not found on ESO archive
         """
-        stars = np.loadtxt('WEBSITE_online.rdb', dtype=str, delimiter='\t', 
-                           usecols=[0], skiprows=1)
+        stars = np.loadtxt(filename, dtype=str, delimiter='\t', 
+                           usecols=[0], skiprows=0)
         
-        for i, j in enumerate(stars):
-            print('***', j, '***')
+        starsInArchive = np.array([])
+        starsNotInArchive = np.array([])
+        for _, j in enumerate(stars):
+            print('          *************')
+            print('          *', j)
+            print('          *************')
             try:
-                star = self.searchStar(j, instrument, date, SNR)
+                self.searchStar(j, instrument, date, SNR)
+                starsInArchive = np.append(starsInArchive, j)
                 print()
             except:
-                print('     Star not found in archive!\n')
-        return stars
+                starsNotInArchive = np.append(starsNotInArchive, j)
+                print('Star not found in ESO archive!\n')
+        return starsInArchive,starsNotInArchive
         
     
+    def getFILEdata(self, filename, downloadPath = None, 
+                    date = None, SNR = None):
+        """
+        Search and downloads spectra of SWEET-Cat stars catalogue.
+    
+        Parameters
+        ----------
+        filename : str
+            File, filename, or generator to read. 
+            filename = '~/WEBSITE_online.rdb'
+        downloadPath: str
+            Adress where to download data
+            If None: downloadPath = '~/'
+        date: str
+            Download only the data past than a certain date (FORMAT: 'YYYY-MM-DD')
+            If None: date = '1990-01-23'
+        SNR: float
+            Signal to noise ratio.
+            If None: SNR = 30
+
+        Returns
+        -------
+        starsInArchive : array
+            List of stars found on ESO archive
+        starsNotInArchive: array
+            List of stars not found on ESO archive
+        """
+        if downloadPath is None:
+            downloadPath = '~/'
+        savePath = downloadPath
+        
+        stars = np.loadtxt(filename, dtype=str, delimiter='\t', 
+                           usecols=[0], skiprows=0)
+        for _, j in enumerate(stars):
+            print('          *************')
+            print('          *', j)
+            print('          *************')
+            try:
+                downloadPath = '{0}/{1}'.format(downloadPath, j)
+                if not os.path.exists('{0}/{1}'.format(downloadPath, j)):
+                    os.makedirs('{0}/{1}'.format(downloadPath, j))
+                self.getALLdata(j, downloadPath, date, SNR)
+            except:
+                print('Star not found in ESO archive!\n')
+            downloadPath = savePath
+        return 0
+
+
     def _remove_planet(self, name):
         """
         Remove the trailing b, c, d, etc in the stellar name, no sure if it is
