@@ -16,6 +16,7 @@ To install:
 - [x] Download spectra considering a given instrument
 - [x] Download spectra considering a given date
 - [x] Download spectra considering a given SNR
+- [x] Test everything
+- [x] Download spectra from a list of stars
+- [x] Copy astroquery eso files and implement them on StarSearch
 - [ ] Test everything
-- [ ] Download spectra from a list of stars
-
