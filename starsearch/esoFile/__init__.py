@@ -12,7 +12,7 @@ class Conf(_config.ConfigNamespace):
     """
 
     row_limit = _config.ConfigItem(
-        50,
+        -1,
         'Maximum number of rows returned (set to -1 for unlimited).')
     username = _config.ConfigItem(
         "",
@@ -21,9 +21,7 @@ class Conf(_config.ConfigNamespace):
         "http://archive.eso.org/wdb/wdb/cas",
         'Root query URL for main and instrument queries.')
 
-
 conf = Conf()
-
 from astroquery.eso.core import Eso, EsoClass
 
 __all__ = ['Eso', 'EsoClass',

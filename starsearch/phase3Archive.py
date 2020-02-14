@@ -24,7 +24,6 @@ class ESOquery():
         self.user = user #user name 
         self.eso = Eso()
         self.eso.login(self.user) #login to eso archive
-        self.eso.ROW_LIMIT = -1 #unlimited number of search results = -1
         self.surveys = self.eso.list_surveys() #list of available surveys
         self.instruments = np.array(['FEROS', 'UVES', 'HARPS', 'ESPRESSO'])
         
@@ -232,7 +231,7 @@ class ESOquery():
             Download only the data younger than a certain date
             
         Returns
-        ------
+        -------
         """
         checkInstruments = self.searchInstruments(star)
         for _, j in enumerate(np.array([instrument])):
@@ -293,7 +292,7 @@ class ESOquery():
             If None: SNR = 30
             
         Returns
-        ------
+        -------
         """
         checkInstruments = self.searchInstruments(star)
         for _, j in enumerate(np.array(['FEROS'])):
@@ -323,7 +322,7 @@ class ESOquery():
             If None: SNR = 30
             
         Returns
-        ------
+        -------
         """
         checkInstruments = self.searchInstruments(star)
         for _, j in enumerate(np.array(['UVES'])):
@@ -353,7 +352,7 @@ class ESOquery():
             If None: SNR = 30
             
         Returns
-        ------
+        -------
         """
         checkInstruments = self.searchInstruments(star)
         for _, j in enumerate(np.array(['HARPS'])):
@@ -383,7 +382,7 @@ class ESOquery():
             If None: SNR = 30
             
         Returns
-        ------
+        -------
         """
         checkInstruments = self.searchInstruments(star)
         for _, j in enumerate(np.array(['ESPRESSO'])):
@@ -427,7 +426,6 @@ class ESOquery():
         """
         stars = np.loadtxt(filename, dtype=str, delimiter='\t', 
                            usecols=[0], skiprows=0)
-        
         starsInArchive = np.array([])
         starsNotInArchive = np.array([])
         for _, j in enumerate(stars):
@@ -442,7 +440,7 @@ class ESOquery():
                 starsNotInArchive = np.append(starsNotInArchive, j)
                 print('Star not found in ESO archive!\n')
         return starsInArchive,starsNotInArchive
-        
+    
     
     def getFILEdata(self, filename, downloadPath = None, 
                     date = None, SNR = None):
@@ -463,18 +461,13 @@ class ESOquery():
         SNR: float
             Signal to noise ratio.
             If None: SNR = 30
-
+            
         Returns
         -------
-        starsInArchive : array
-            List of stars found on ESO archive
-        starsNotInArchive: array
-            List of stars not found on ESO archive
         """
         if downloadPath is None:
             downloadPath = '~/'
         savePath = downloadPath
-        
         stars = np.loadtxt(filename, dtype=str, delimiter='\t', 
                            usecols=[0], skiprows=0)
         for _, j in enumerate(stars):
@@ -489,9 +482,8 @@ class ESOquery():
             except:
                 print('Star not found in ESO archive!\n')
             downloadPath = savePath
-        return 0
-
-
+    
+    
     def _remove_planet(self, name):
         """
         Remove the trailing b, c, d, etc in the stellar name, no sure if it is
@@ -515,3 +507,5 @@ class ESOquery():
         if name.endswith('.01') or name.endswith('.02') or name.endswith('.2'):
             return name[:-3]                
         return name
+    
+    
