@@ -10,7 +10,6 @@ class Conf(_config.ConfigNamespace):
     """
     Configuration parameters for `astroquery.eso`.
     """
-
     row_limit = _config.ConfigItem(
         -1,
         'Maximum number of rows returned (set to -1 for unlimited).')
@@ -21,8 +20,10 @@ class Conf(_config.ConfigNamespace):
         "http://archive.eso.org/wdb/wdb/cas",
         'Root query URL for main and instrument queries.')
 
+
 conf = Conf()
 from astroquery.eso.core import Eso, EsoClass
+
 
 __all__ = ['Eso', 'EsoClass',
            'Conf', 'conf',
