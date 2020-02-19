@@ -5,7 +5,7 @@ import os
 from astropy.time import Time
 from sys import maxsize
 np.set_printoptions(threshold = maxsize)
-from esoFile import Eso
+from .esoFile import Eso
 
 
 class ESOquery():
