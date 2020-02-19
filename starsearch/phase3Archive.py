@@ -21,6 +21,7 @@ class ESOquery():
     -------
     """
     def __init__(self, user):
+        super(ESOquery, self).__init__()
         self.user = user #user name 
         self.eso = Eso()
         self.eso.login(self.user) #login to eso archive
@@ -118,7 +119,7 @@ class ESOquery():
             search = self.eso.query_surveys(surveys = list(self.instruments), 
                                             target = star)
         search.remove_rows(Time(search['Date Obs']) < date) #Date criteria
-        search.remove_rows(search['SNR'] < SNR) #SNR critetia
+        search.remove_rows(search['SNR (spectra)'] < SNR) #SNR critetia
         return search
     
     
@@ -199,7 +200,7 @@ class ESOquery():
         if not SNR: 
             SNR = 30
         search = self.searchStar(star, instrument)
-        search.remove_rows(search['SNR'] < SNR)
+        search.remove_rows(search['SNR (spectra)'] < SNR)
         return search
     
     
