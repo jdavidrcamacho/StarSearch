@@ -5,7 +5,7 @@ import os
 from astropy.time import Time
 from sys import maxsize
 np.set_printoptions(threshold = maxsize)
-from .esoFile import Eso
+from core import Eso
 
 
 class ESOquery():
@@ -25,6 +25,7 @@ class ESOquery():
         self.user = user #user name 
         self.eso = Eso()
         self.eso.login(self.user) #login to eso archive
+        self.eso.ROW_LIMIT = -1 #unlimited number of search results = -1
         self.surveys = self.eso.list_surveys() #list of available surveys
         self.instruments = np.array(['FEROS', 'UVES', 'HARPS', 'ESPRESSO'])
         
