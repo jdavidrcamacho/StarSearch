@@ -1,5 +1,5 @@
-# Licensed under a 3-clause BSD style license - see LICENSE.rst
-# Copied from astroquery package
+######################## copied from astroquery package #######################
+# Licensed under a 3-clause BSD style license - see LICENSE.rst on astroquery
 from __future__ import print_function
 import time
 import sys
@@ -10,20 +10,35 @@ import warnings
 import keyring
 import numpy as np
 import re
-from bs4 import BeautifulSoup
-
-from six import BytesIO
 import six
+
+from bs4 import BeautifulSoup
+from six import BytesIO
 from astropy.table import Table, Column
 from astropy import log
-
 from astroquery.exceptions import LoginError, RemoteServiceError, NoResultsWarning
 from astroquery.utils import schema, system_tools
 from astroquery.query import QueryWithLogin, suspend_cache
-from . import conf
+from astropy import config as _config
+
+
+### ESO service.
+class Conf(_config.ConfigNamespace):
+    """
+    Configuration parameters for `astroquery.eso`.
+    """
+    row_limit = _config.ConfigItem(
+        -1,
+        'Maximum number of rows returned (set to -1 for unlimited).')
+    username = _config.ConfigItem(
+        "",
+        'Optional default username for ESO archive.')
+    query_instrument_url = _config.ConfigItem(
+        "http://archive.eso.org/wdb/wdb/cas",
+        'Root query URL for main and instrument queries.')
+conf = Conf()
 
 __doctest_skip__ = ['EsoClass.*']
-
 
 def _check_response(content):
     """
@@ -38,6 +53,7 @@ def _check_response(content):
         return True
     
     
+### ESO class
 class EsoClass(QueryWithLogin):
     ROW_LIMIT = conf.row_limit
     USERNAME = conf.username
@@ -450,7 +466,6 @@ class EsoClass(QueryWithLogin):
             instrument_form = self._request("GET", url, cache=cache)
             query_dict = {}
             query_dict.update(column_filters)
-            # TODO: replace this with individually parsed kwargs
             query_dict.update(kwargs)
             query_dict["wdbo"] = "csv/download"
             # Default to returning the DP.ID since it is needed for header
@@ -708,9 +723,6 @@ class EsoClass(QueryWithLogin):
                 inputs = {}
                 if with_calib != 'none':
                     inputs['requestCommand'] = calib_options[with_calib]
-                # TODO: There may be another screen for Not Authorized; that
-                # should be included too
-                # form name is "retrieve"; no id
                 data_download_form = self._activate_form(
                     data_confirmation_form, form_index=-1, inputs=inputs,
                     cache=False)
@@ -998,6 +1010,8 @@ class EsoClass(QueryWithLogin):
         print("\n".join(result_string))
         return result_string
     
-    
 Eso = EsoClass()
 
+__all__ = ['Eso', 'EsoClass',
+           'Conf', 'conf',
+           ]
