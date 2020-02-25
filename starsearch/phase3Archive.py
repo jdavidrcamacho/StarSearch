@@ -112,7 +112,6 @@ class ESOquery():
         date = Time(date)
         if not SNR: 
             SNR = 30
-            
         if instrument:
             search = self.eso.query_surveys(surveys = instrument, 
                                             target = star)
@@ -273,7 +272,6 @@ class ESOquery():
             else:
                 print('No {0} data\n'.format(j))
         print('\n*** Done ***\n')
-
         
         
     def getFEROSdata(self, star, downloadPath = None , date = None, SNR = None):

@@ -28,7 +28,7 @@ class Conf(_config.ConfigNamespace):
     Configuration parameters for `astroquery.eso`.
     """
     row_limit = _config.ConfigItem(
-        -1,
+        50,
         'Maximum number of rows returned (set to -1 for unlimited).')
     username = _config.ConfigItem(
         "",
@@ -607,6 +607,7 @@ class EsoClass(QueryWithLogin):
             else:
                 datasets_to_download.append(dataset)
         return datasets_to_download, files
+    
     
     def _download_file(self, url, local_filepath, **kwargs):
         """ 
