@@ -5,7 +5,7 @@ import os
 from astropy.time import Time
 from sys import maxsize
 np.set_printoptions(threshold = maxsize)
-from core import Eso
+from starsearch.core import Eso
 
 
 class ESOquery():
@@ -475,9 +475,9 @@ class ESOquery():
             print('          *', j)
             print('          *************')
             try:
-                downloadPath = '{0}/{1}'.format(downloadPath, j)
                 if not os.path.exists('{0}/{1}'.format(downloadPath, j)):
                     os.makedirs('{0}/{1}'.format(downloadPath, j))
+                downloadPath = '{0}/{1}'.format(downloadPath, j)
                 self.getALLdata(j, downloadPath, date, SNR)
             except:
                 print('Star not found in ESO archive!\n')
