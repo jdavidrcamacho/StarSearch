@@ -3,4 +3,4 @@
 """ 
 Welcome to starsearch
 """
-from starsearch import rawArchive, phase3Archive 
+from starsearch import rawArchive, phase3Archive, core
