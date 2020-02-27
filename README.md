@@ -3,9 +3,13 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jdavidrcamacho/tedi/blob/master/LICENSE)
 
 ESO archive search\
-To install:
+To install with pip:
 
-        python setup.py develop
+        $ pip install starsearch
+
+Or download the repository and in the terminal:
+
+        $ python setup.py develop
 
 
 ----------
@@ -21,3 +25,4 @@ To install:
 - [x] Copy astroquery eso files 
 - [x] Adapt astroquery files to work on StarSearch
 - [ ] Test everything
+- [ ] Upload it to pypi
