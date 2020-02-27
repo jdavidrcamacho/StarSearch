@@ -25,4 +25,5 @@ Or download the repository and in the terminal:
 - [x] Copy astroquery eso files 
 - [x] Adapt astroquery files to work on StarSearch
 - [ ] Test everything
+- [ ] Prepare examples on how to use it
 - [ ] Upload it to pypi
