@@ -24,6 +24,9 @@ Or download the repository and in the terminal:
 - [x] Download spectra from a list of stars
 - [x] Copy astroquery eso files 
 - [x] Adapt astroquery files to work on StarSearch
-- [ ] Test everything
+- [x] Test everything
 - [ ] Prepare examples on how to use it
-- [ ] Upload it to pypi
+- [x] Upload it to pypi
+- [ ] Summary of spectra found on arquive
+- [ ] Comparison of two diferent spectra parameters
+- [ ] Test everything
