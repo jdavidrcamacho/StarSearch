@@ -509,3 +509,41 @@ class ESOquery():
         return name
     
     
+    def summaryStar(self, star, instrument=None, date=None, SNR=None):
+        """
+        Return a summary of the spectra available of a given star
+        
+        Parameters
+        ----------
+        star: str
+            Name of the star
+        instrument: str
+            Name of the instrument, None for default instruments
+        date: str
+            Date to search for obvervation (FORMAT: 'YYYY-MM-DD')
+            If None: date = '1990-01-23'
+        SNR: float
+            Signal to noise ratio. 
+            If None: SNR = 30
+            
+        Returns
+        -------
+        search: table
+            Result of the query on ESO arquive
+        """
+        if not date: 
+            date = Time('1990-01-23')
+        date = Time(date)
+        if not SNR: 
+            SNR = 30
+        if instrument:
+            search = self.eso.query_surveys(surveys = instrument, 
+                                            target = star)
+        else:
+            search = self.eso.query_surveys(surveys = list(self.instruments), 
+                                            target = star)
+        search.remove_rows(Time(search['Date Obs']) < date) #Date criteria
+        search.remove_rows(search['SNR (spectra)'] < SNR) #SNR critetia
+        
+        
+        return search
