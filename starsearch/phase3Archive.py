@@ -3,7 +3,7 @@
 import numpy as np
 import os
 from astropy.time import Time
-from sys import maxsize
+from sys import maxsize, stdout
 np.set_printoptions(threshold = maxsize)
 from starsearch.core import Eso
 
@@ -509,7 +509,8 @@ class ESOquery():
         return name
     
     
-    def summaryStar(self, star, instrument=None, date=None, SNR=None):
+    def summaryStar(self, star, instrument=None, date=None, SNR=None, 
+                    savetofile = False):
         """
         Return a summary of the spectra available of a given star
         
@@ -528,8 +529,6 @@ class ESOquery():
             
         Returns
         -------
-        search: table
-            Result of the query on ESO arquive
         """
         if not date: 
             date = Time('1990-01-23')
@@ -544,6 +543,74 @@ class ESOquery():
                                             target = star)
         search.remove_rows(Time(search['Date Obs']) < date) #Date criteria
         search.remove_rows(search['SNR (spectra)'] < SNR) #SNR critetia
+        #organizing our stuff
+        fileName = np.array(search['ARCFILE'])
+        spectrograph = np.array(search['Instrument'])
+        obsDate = np.array(search['Date Obs'])
+        snr = np.array(search['SNR (spectra)'])
+        if savetofile:
+            f = open("StarSearch_Summary.txt","a")
+        else:
+            f = stdout 
+        #number of spectra
+        print(file = f)
+        print('          *** SUMMARY of {0} *** \n'.format(star), file = f)
+        print('Total number of spectra found: {0}'.format(snr.size), file = f)
+        value, count = np.unique(spectrograph, return_counts=True)
+        for i in range(value.size):
+            print('{0} spectra: {1}'.format(value[i], count[i]), file = f)
+        print(file = f)
+        #signal-to-noise
+        maxSNRpos = np.argmax(snr)
+        print('Maximum SNR: {0}'.format(snr[maxSNRpos]), file = f)
+        print('Observation date: {0}'.format(obsDate[maxSNRpos]), file = f)
+        print('Instrument: {0}'.format(spectrograph[maxSNRpos]), file = f)
+        print('File name: {0} \n'.format(fileName[maxSNRpos]), file = f)
+        minSNRpos = np.argmin(snr)
+        print('Minimum SNR: {0}'.format(snr[minSNRpos]), file = f)
+        print('Observation date: {0}'.format(obsDate[minSNRpos]), file = f)
+        print('Instrument: {0}'.format(spectrograph[minSNRpos]), file = f)
+        print('File name: {0} \n'.format(fileName[minSNRpos]), file = f)
+        if savetofile:
+            f.close()
+        return 0
+    
+    
+    def summaryList(self, filename, instrument=None, date=None, SNR=None,
+                    savetofile = False):
+        """
+        Return a summary of the spectra available of the stars in a given list
         
-        
-        return search
+        Parameters
+        ----------
+        star: str
+            Name of the star
+        instrument: str
+            Name of the instrument, None for default instruments
+        date: str
+            Date to search for obvervation (FORMAT: 'YYYY-MM-DD')
+            If None: date = '1990-01-23'
+        SNR: float
+            Signal to noise ratio. 
+            If None: SNR = 30
+        savetofile: bool
+            Save summary in a .txt file
+            Default: False
+        Returns
+        -------
+        """   
+        stars = np.loadtxt(filename, dtype=str, delimiter='\t', 
+                           usecols=[0], skiprows=0)
+        if savetofile:
+            f = open("StarSearch_Summary.txt","a")
+        else:
+            f = stdout 
+        for _, j in enumerate(stars):
+            try:
+                self.summaryStar(j, instrument=instrument, date=date, SNR=SNR,
+                                 savetofile=savetofile)
+            except:
+                print('{0} not found in archive'.format(j), file = f)
+        if savetofile:
+            f.close()
+        return 0
