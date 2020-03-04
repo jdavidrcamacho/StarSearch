@@ -3,11 +3,11 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jdavidrcamacho/tedi/blob/master/LICENSE)
 
 ESO archive search\
-To install with pip:
+You can install the stable version with pip:
 
         $ pip install starsearch
 
-Or download the repository and in the terminal:
+Or download the unstable version's repository and in the terminal type:
 
         $ python setup.py develop
 
