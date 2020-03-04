@@ -101,7 +101,7 @@ class ESOquery():
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio. 
-            If None: SNR = 30
+            If None: SNR = 10
             
         Returns
         -------
@@ -112,7 +112,7 @@ class ESOquery():
             date = Time('1990-01-23')
         date = Time(date)
         if not SNR: 
-            SNR = 30
+            SNR = 10
         if instrument:
             search = self.eso.query_surveys(surveys = instrument, 
                                             target = star)
@@ -191,7 +191,7 @@ class ESOquery():
             Name of the instrument, None for default instruments
         SNR: float
             Signal to noise ratio. 
-            If None: SNR = 30
+            If None: SNR = 10
             
         Returns
         -------
@@ -199,7 +199,7 @@ class ESOquery():
             Array with the signal-to-noise ratios
         """
         if not SNR: 
-            SNR = 30
+            SNR = 10
         search = self.searchStar(star, instrument)
         search.remove_rows(search['SNR (spectra)'] < SNR)
         return search
@@ -260,7 +260,7 @@ class ESOquery():
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio. 
-            If None: SNR = 30
+            If None: SNR = 10
             
         Returns
         -------
@@ -290,7 +290,7 @@ class ESOquery():
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio. 
-            If None: SNR = 30
+            If None: SNR = 10
             
         Returns
         -------
@@ -320,7 +320,7 @@ class ESOquery():
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio. 
-            If None: SNR = 30
+            If None: SNR = 10
             
         Returns
         -------
@@ -350,7 +350,7 @@ class ESOquery():
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio. 
-            If None: SNR = 30
+            If None: SNR = 10
             
         Returns
         -------
@@ -380,7 +380,7 @@ class ESOquery():
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio.
-            If None: SNR = 30
+            If None: SNR = 10
             
         Returns
         -------
@@ -416,7 +416,7 @@ class ESOquery():
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio.
-            If None: SNR = 30
+            If None: SNR = 10
             
         Returns
         -------
@@ -461,7 +461,7 @@ class ESOquery():
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio.
-            If None: SNR = 30
+            If None: SNR = 10
             
         Returns
         -------
@@ -511,7 +511,7 @@ class ESOquery():
     
     
     def summaryStar(self, star, instrument=None, date=None, SNR=None, 
-                    savetofile = False):
+                    saveFile = False, savePath=None):
         """
         Return a summary of the spectra available of a given star
         
@@ -526,31 +526,26 @@ class ESOquery():
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio. 
-            If None: SNR = 30
-            
+            If None: SNR = 10
+        saveFile: bool
+            Save summary in a .txt file
+            Default: saveFile = False
+        savePath: str
+            Path to save the generated .txt file
+
         Returns
         -------
         """
-        if not date: 
-            date = Time('1990-01-23')
-        date = Time(date)
-        if not SNR: 
-            SNR = 30
-        if instrument:
-            search = self.eso.query_surveys(surveys = instrument, 
-                                            target = star)
-        else:
-            search = self.eso.query_surveys(surveys = list(self.instruments), 
-                                            target = star)
-        search.remove_rows(Time(search['Date Obs']) < date) #Date criteria
-        search.remove_rows(search['SNR (spectra)'] < SNR) #SNR critetia
+        search = self.searchStar(star,instrument=instrument,date=date,SNR=SNR)
         #organizing our stuff
         fileName = np.array(search['ARCFILE'])
         spectrograph = np.array(search['Instrument'])
         obsDate = np.array(search['Date Obs'])
         snr = np.array(search['SNR (spectra)'])
         now = datetime.now()
-        if savetofile:
+        if savePath:
+            os.chdir(savePath)
+        if saveFile:
             f = open("{0}_{1}.txt".format(star,now.strftime("%Y-%m-%dT%H:%M:%S")),"a")
         else:
             f = stdout 
@@ -577,12 +572,12 @@ class ESOquery():
         for i, j in enumerate(fileName):
             print('{0}\t{1}\t{2}\t{3}'.format(j,spectrograph[i],obsDate[i], snr[i]),
                 file = f)
-        if savetofile:
+        if saveFile:
             f.close()
     
     
     def summaryList(self, filename, instrument=None, date=None, SNR=None,
-                    savetofile = False):
+                    saveFile = False, savePath=None):
         """
         Return a summary of the spectra available of the stars in a given list
         
@@ -597,17 +592,20 @@ class ESOquery():
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio. 
-            If None: SNR = 30
-        savetofile: bool
+            If None: SNR = 10
+        saveFile: bool
             Save summary in a .txt file
-            Default: False
+            Default: saveFile = False
+        savePath: str
+            Path to save the generated .txt files
+
         Returns
         -------
         """   
         stars = np.loadtxt(filename, dtype=str, delimiter='\t', 
                            usecols=[0], skiprows=0)
         now = datetime.now()
-        if savetofile:
+        if saveFile:
             f = open("{0}_{1}.txt".format(filename,
                     now.strftime("%Y-%m-%dT%H:%M:%S")),"a")
         else:
@@ -615,9 +613,9 @@ class ESOquery():
         for _, j in enumerate(stars):
             try:
                 self.summaryStar(j, instrument=instrument, date=date, SNR=SNR,
-                                 savetofile=savetofile)
+                                 saveFile=saveFile, savePath=savePath)
             except:
                 print('{0} not found in archive'.format(j), file = f)
-        if savetofile:
+        if saveFile:
             f.close()
 
