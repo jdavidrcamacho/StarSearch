@@ -28,7 +28,7 @@ class ESOquery():
         self.eso.login(self.user) #login to eso archive
         self.eso.ROW_LIMIT = -1 #unlimited number of search results = -1
         self.surveys = self.eso.list_surveys() #list of available surveys
-        self.instruments = np.array(['FEROS', 'UVES', 'HARPS', 'ESPRESSO'])
+        self.instruments = np.array(['FEROS', 'HARPS', 'ESPRESSO'])
         
         
     def searchInstruments(self, star):
@@ -119,8 +119,11 @@ class ESOquery():
         else:
             search = self.eso.query_surveys(surveys = list(self.instruments), 
                                             target = star)
-        search.remove_rows(Time(search['Date Obs']) < date) #Date criteria
-        search.remove_rows(search['SNR (spectra)'] < SNR) #SNR critetia
+        try:
+            search.remove_rows(Time(search['Date Obs']) < date) #Date criteria
+            search.remove_rows(search['SNR (spectra)'] < SNR) #SNR critetia
+        except:
+            pass
         return search
     
     
@@ -511,7 +514,7 @@ class ESOquery():
     
     
     def summaryStar(self, star, instrument=None, date=None, SNR=None, 
-                    saveFile = False, savePath=None):
+                    saveFile=False, savePath=None, printFiles=False):
         """
         Return a summary of the spectra available of a given star
         
@@ -532,16 +535,12 @@ class ESOquery():
             Default: saveFile = False
         savePath: str
             Path to save the generated .txt file
-
+        printFiles: bool
+            Print each spectra file and respective parameters
+            Default: printFiles = False
         Returns
         -------
         """
-        search = self.searchStar(star,instrument=instrument,date=date,SNR=SNR)
-        #organizing our stuff
-        fileName = np.array(search['ARCFILE'])
-        spectrograph = np.array(search['Instrument'])
-        obsDate = np.array(search['Date Obs'])
-        snr = np.array(search['SNR (spectra)'])
         now = datetime.now()
         if savePath:
             os.chdir(savePath)
@@ -549,35 +548,47 @@ class ESOquery():
             f = open("{0}_{1}.txt".format(star,now.strftime("%Y-%m-%dT%H:%M:%S")),"a")
         else:
             f = stdout 
-        #number of spectra
         print('*** SUMMARY of {0} *** \n'.format(star), file = f)
-        print('Total number of spectra found: {0}'.format(snr.size), file = f)
-        value, count = np.unique(spectrograph, return_counts=True)
-        for i in range(value.size):
-            print('{0} spectra: {1}'.format(value[i], count[i]), file = f)
-        print(file = f)
-        #signal-to-noise
-        maxSNRpos = np.argmax(snr)
-        print('Maximum SNR: {0}'.format(snr[maxSNRpos]), file = f)
-        print('Observation date: {0}'.format(obsDate[maxSNRpos]), file = f)
-        print('Instrument: {0}'.format(spectrograph[maxSNRpos]), file = f)
-        print('File name: {0} \n'.format(fileName[maxSNRpos]), file = f)
-        minSNRpos = np.argmin(snr)
-        print('Minimum SNR: {0}'.format(snr[minSNRpos]), file = f)
-        print('Observation date: {0}'.format(obsDate[minSNRpos]), file = f)
-        print('Instrument: {0}'.format(spectrograph[minSNRpos]), file = f)
-        print('File name: {0} \n'.format(fileName[minSNRpos]), file = f)
-        #spectra found
-        print('ARCFILE\tInstrument\tObservationDate\tSNR', file = f)
-        for i, j in enumerate(fileName):
-            print('{0}\t{1}\t{2}\t{3}'.format(j,spectrograph[i],obsDate[i], snr[i]),
-                file = f)
-        if saveFile:
-            f.close()
-    
-    
+        search = self.searchStar(star,instrument=instrument,date=date,SNR=SNR)
+        #organizing our stuff
+        try:
+            fileName = np.array(search['ARCFILE'])
+            spectrograph = np.array(search['Instrument'])
+            obsDate = np.array(search['Date Obs'])
+            snr = np.array(search['SNR (spectra)'])
+            #number of spectra
+            print('Total number of spectra found: {0}'.format(snr.size), file = f)
+            value, count = np.unique(spectrograph, return_counts=True)
+            for i in range(value.size):
+                specSNR = search[search['Instrument']==value[i]]['SNR (spectra)']
+                quadSum = np.sqrt(np.sum(specSNR**2))
+                print('{0} spectra: {1}'.format(value[i], count[i]), '|',
+                      'SNR Quadratic Sum: {0}'.format(quadSum), file = f)
+            print(file = f)
+            maxSNRpos = np.argmax(snr)
+            print('Maximum SNR: {0}'.format(snr[maxSNRpos]), file = f)
+            print('Observation date: {0}'.format(obsDate[maxSNRpos]), file = f)
+            print('Instrument: {0}'.format(spectrograph[maxSNRpos]), file = f)
+            print('File name: {0} \n'.format(fileName[maxSNRpos]), file = f)
+            minSNRpos = np.argmin(snr)
+            print('Minimum SNR: {0}'.format(snr[minSNRpos]), file = f)
+            print('Observation date: {0}'.format(obsDate[minSNRpos]), file = f)
+            print('Instrument: {0}'.format(spectrograph[minSNRpos]), file = f)
+            print('File name: {0} \n'.format(fileName[minSNRpos]), file = f)
+            #spectra found
+            if printFiles:
+                print('ARCFILE\tInstrument\tObservationDate\tSNR', file = f)
+                for i, j in enumerate(fileName):
+                    print('{0}\t{1}\t{2}\t{3}'.format(j, spectrograph[i], 
+                          obsDate[i], snr[i]), file = f)
+            if saveFile:
+                f.close()
+        except:
+            print('{0} not found in archive\n'.format(star), file = f)
+        
+        
     def summaryList(self, filename, instrument=None, date=None, SNR=None,
-                    saveFile = False, savePath=None):
+                    saveFile = False, savePath=None, printFiles = False):
         """
         Return a summary of the spectra available of the stars in a given list
         
@@ -598,7 +609,10 @@ class ESOquery():
             Default: saveFile = False
         savePath: str
             Path to save the generated .txt files
-
+        printFiles: bool
+            Print each spectra file and respective parameters
+            Default: printFiles = False
+            
         Returns
         -------
         """   
@@ -613,7 +627,8 @@ class ESOquery():
         for _, j in enumerate(stars):
             try:
                 self.summaryStar(j, instrument=instrument, date=date, SNR=SNR,
-                                 saveFile=saveFile, savePath=savePath)
+                                 saveFile=saveFile, savePath=savePath, 
+                                 printFiles=printFiles)
             except:
                 print('{0} not found in archive'.format(j), file = f)
         if saveFile:
