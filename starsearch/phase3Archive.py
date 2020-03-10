@@ -605,21 +605,24 @@ class ESOquery():
         Returns
         -------
         noSpectra: arr
-            Array with stars with no spectra on ESO archives
+            Array with the stars with no spectra on ESO archives
         """   
-#        stars = np.loadtxt(filename, dtype = str, delimiter='\t', 
-#                           usecols = [0], skiprows = header)
         stars = np.loadtxt(filename, dtype = str, delimiter = '\t', 
                            skiprows = header)
         for i, j in enumerate(stars):
-            stars[i] = ' '.join(stars[i].split(' ', -1)[:-2])
+            checkLash = j.find('/') #to separate the stars that have two names
+            stars[i] = ' '.join(j.split(' ', -1)[:-2]) #remove last 2 columns
+            if checkLash != -1:
+                newStar = j.split('/')
+                stars[i] = newStar[0]
+                stars = np.append(stars, ' '.join(newStar[1].split(' ', -1)[:-2]))
         now = datetime.now()
         if saveFile:
             f = open("{0}_{1}.txt".format(filename[0:-4],
                     now.strftime("%Y-%m-%dT%H:%M:%S")),"a")
         else:
             f = stdout
-        noSpectra = []
+        noSpectra = [] #to add the stars with no spectra on archive
         for _, j in enumerate(stars):
             try:
                 self.summaryStar(j, instrument=instrument, 
@@ -633,6 +636,6 @@ class ESOquery():
             for _, j in enumerate(noSpectra):
                 print(j, file = f)
             f.close()
-        return np.array(noSpectra)
+        return noSpectra
 
 
