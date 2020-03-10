@@ -29,6 +29,7 @@ class ESOquery():
         self.eso.ROW_LIMIT = -1 #unlimited number of search results = -1
         self.surveys = self.eso.list_surveys() #list of available surveys
         self.instruments = np.array(['FEROS', 'HARPS', 'ESPRESSO'])
+        self.UVES = np.array(['UVES'])
         
         
     def searchInstruments(self, star):
@@ -57,7 +58,7 @@ class ESOquery():
         return instrumentDict
     
     
-    def searchInstrumentSpectra(self, star, instrument=None):
+    def searchInstrumentSpectra(self, star, instrument = None):
         """
         Checks how many spectra is available to downloand for a given instrument
         
@@ -86,7 +87,7 @@ class ESOquery():
             return instrumentDict
         
         
-    def searchStar(self, star, instrument=None, date=None, SNR=None):
+    def searchStar(self, star, instrument = None, date = None, SNR = None):
         """
         Return phase 3 ESO query for given star and a given instrument
         
@@ -127,7 +128,7 @@ class ESOquery():
         return search
     
     
-    def searchObservationDate(self, star, instrument=None):
+    def searchObservationDate(self, star, instrument = None):
         """
         Searches for the modified Julian Date (JD - 2400000.5) of the 
         observation
@@ -154,7 +155,7 @@ class ESOquery():
         return result
     
     
-    def searchByDate(self, star, instrument=None, date=None):
+    def searchByDate(self, star, instrument = None, date = None):
         """
         Searches for spectra of a given star past a certain date of observation
         
@@ -181,7 +182,7 @@ class ESOquery():
         return search
     
     
-    def searchBySNR(self, star, instrument=None, SNR = None):
+    def searchBySNR(self, star, instrument = None, SNR = None):
         """
         Return spectra with a signal-to-noise ratio higher than a certain 
         SNR value
@@ -446,7 +447,7 @@ class ESOquery():
         return starsInArchive, starsNotInArchive
     
     
-    def getFILEdata(self, filename, downloadPath = None, 
+    def getFILEdata(self, filename, header = 0, downloadPath = None, 
                     date = None, SNR = None):
         """
         Search and downloads spectra of SWEET-Cat stars catalogue.
@@ -455,7 +456,10 @@ class ESOquery():
         ----------
         filename : str
             File, filename, or generator to read. 
-            filename = '~/WEBSITE_online.rdb'
+            Example: filename = '~/WEBSITE_online.rdb'
+        header: int
+            Number of header lines to skip
+            Default: header = 0
         downloadPath: str
             Adress where to download data
             If None: downloadPath = '~/'
@@ -472,8 +476,8 @@ class ESOquery():
         if downloadPath is None:
             downloadPath = '~/'
         savePath = downloadPath
-        stars = np.loadtxt(filename, dtype=str, delimiter='\t', 
-                           usecols=[0], skiprows=0)
+        stars = np.loadtxt(filename, dtype = str, delimiter='\t', 
+                           usecols = [0], skiprows = header)
         for _, j in enumerate(stars):
             print('*************')
             print('*', j)
@@ -509,12 +513,12 @@ class ESOquery():
                 return name[:-2]
         # some exoplanets have .01 or .02 in the name 
         if name.endswith('.01') or name.endswith('.02') or name.endswith('.2'):
-            return name[:-3]                
+            return name[:-3]
         return name
     
     
-    def summaryStar(self, star, instrument=None, date=None, SNR=None, 
-                    saveFile=False, savePath=None, printFiles=False):
+    def summaryStar(self, star, instrument = None, date = None, SNR = None, 
+                    saveFile = False, savePath = None, printFiles = False):
         """
         Return a summary of the spectra available of a given star
         
@@ -587,15 +591,20 @@ class ESOquery():
             print('{0} not found in archive\n'.format(star), file = f)
         
         
-    def summaryList(self, filename, instrument=None, date=None, SNR=None,
-                    saveFile = False, savePath=None, printFiles = False):
+    def summaryList(self, filename, header = 0, instrument = None, date = None, 
+                    SNR = None, saveFile = False, savePath = None, 
+                    printFiles = False):
         """
         Return a summary of the spectra available of the stars in a given list
         
         Parameters
         ----------
-        star: str
-            Name of the star
+        filename: str
+            File, filename, or generator to read. 
+            Example: filename = '~/something.txt'
+        header: int
+            Number of header lines to skip
+            Default: header = 0
         instrument: str
             Name of the instrument, None for default instruments
         date: str
@@ -616,8 +625,8 @@ class ESOquery():
         Returns
         -------
         """   
-        stars = np.loadtxt(filename, dtype=str, delimiter='\t', 
-                           usecols=[0], skiprows=0)
+        stars = np.loadtxt(filename, dtype = str, delimiter='\t', 
+                           usecols = [0], skiprows = header)
         now = datetime.now()
         if saveFile:
             f = open("{0}_{1}.txt".format(filename,
