@@ -7,7 +7,7 @@ from sys import maxsize, stdout
 from datetime import datetime
 np.set_printoptions(threshold = maxsize)
 from starsearch.core import Eso
-
+from starsearch.utils import split_str
 
 class ESOquery():
     """
@@ -492,33 +492,9 @@ class ESOquery():
             downloadPath = savePath
     
     
-    def _remove_planet(self, name):
-        """
-        Remove the trailing b, c, d, etc in the stellar name, no sure if it is
-        going to be necessary
-        
-        Parameters
-        ----------
-        name: str
-            Name of the star+planet
-            
-        Returns
-        -------
-        name: str
-            Name  of the star
-        """
-        planets = 'bcdefghijB'
-        for planet in planets:
-            if name.endswith(' %s' % planet):
-                return name[:-2]
-        # some exoplanets have .01 or .02 in the name 
-        if name.endswith('.01') or name.endswith('.02') or name.endswith('.2'):
-            return name[:-3]
-        return name
-    
-    
     def summaryStar(self, star, instrument = None, date = None, SNR = None, 
-                    saveFile = False, savePath = None, printFiles = False):
+                    saveFile = False, savePath = None, printFiles = False, 
+                    fromList = False):
         """
         Return a summary of the spectra available of a given star
         
@@ -542,6 +518,8 @@ class ESOquery():
         printFiles: bool
             Print each spectra file and respective parameters
             Default: printFiles = False
+        fromList: Bool
+            If we are checking a list or not
         Returns
         -------
         """
@@ -552,44 +530,46 @@ class ESOquery():
             f = open("{0}_{1}.txt".format(star,now.strftime("%Y-%m-%dT%H:%M:%S")),"a")
         else:
             f = stdout 
-        print('*** SUMMARY of {0} *** \n'.format(star), file = f)
+        if fromList:
+            f = fromList
+        print('*** SUMMARY of {0} ***'.format(star), file = f)
         search = self.searchStar(star,instrument=instrument,date=date,SNR=SNR)
         #organizing our stuff
-        try:
-            fileName = np.array(search['ARCFILE'])
-            spectrograph = np.array(search['Instrument'])
-            obsDate = np.array(search['Date Obs'])
-            snr = np.array(search['SNR (spectra)'])
-            #number of spectra
-            print('Total number of spectra found: {0}'.format(snr.size), file = f)
-            value, count = np.unique(spectrograph, return_counts=True)
-            for i in range(value.size):
-                specSNR = search[search['Instrument']==value[i]]['SNR (spectra)']
-                quadSum = np.sqrt(np.sum(specSNR**2))
-                print('{0} spectra: {1}'.format(value[i], count[i]), '|',
-                      'SNR Quadratic Sum: {0}'.format(quadSum), file = f)
-            print(file = f)
-            maxSNRpos = np.argmax(snr)
-            print('Maximum SNR: {0}'.format(snr[maxSNRpos]), file = f)
-            print('Observation date: {0}'.format(obsDate[maxSNRpos]), file = f)
-            print('Instrument: {0}'.format(spectrograph[maxSNRpos]), file = f)
-            print('File name: {0} \n'.format(fileName[maxSNRpos]), file = f)
-            minSNRpos = np.argmin(snr)
-            print('Minimum SNR: {0}'.format(snr[minSNRpos]), file = f)
-            print('Observation date: {0}'.format(obsDate[minSNRpos]), file = f)
-            print('Instrument: {0}'.format(spectrograph[minSNRpos]), file = f)
-            print('File name: {0} \n'.format(fileName[minSNRpos]), file = f)
-            #spectra found
-            if printFiles:
-                print('ARCFILE\tInstrument\tObservationDate\tSNR', file = f)
-                for i, j in enumerate(fileName):
-                    print('{0}\t{1}\t{2}\t{3}'.format(j, spectrograph[i], 
-                          obsDate[i], snr[i]), file = f)
-            if saveFile:
-                f.close()
-        except:
-            print('{0} not found in archive\n'.format(star), file = f)
-        
+#        try:
+        fileName = np.array(search['ARCFILE'])
+        spectrograph = np.array(search['Instrument'])
+        obsDate = np.array(search['Date Obs'])
+        snr = np.array(search['SNR (spectra)'])
+        #number of spectra
+        print('Total number of spectra found: {0}'.format(snr.size), file = f)
+        value, count = np.unique(spectrograph, return_counts=True)
+        for i in range(value.size):
+            specSNR = search[search['Instrument']==value[i]]['SNR (spectra)']
+            quadSum = np.sqrt(np.sum(specSNR**2))
+            print('{0} spectra: {1}'.format(value[i], count[i]), '|',
+                  'SNR Quadratic Sum: {0}'.format(quadSum), file = f)
+        print(file = f)
+        maxSNRpos = np.argmax(snr)
+        print('Maximum SNR: {0}'.format(snr[maxSNRpos]), file = f)
+        print('Observation date: {0}'.format(obsDate[maxSNRpos]), file = f)
+        print('Instrument: {0}'.format(spectrograph[maxSNRpos]), file = f)
+        print('File name: {0} \n'.format(fileName[maxSNRpos]), file = f)
+        minSNRpos = np.argmin(snr)
+        print('Minimum SNR: {0}'.format(snr[minSNRpos]), file = f)
+        print('Observation date: {0}'.format(obsDate[minSNRpos]), file = f)
+        print('Instrument: {0}'.format(spectrograph[minSNRpos]), file = f)
+        print('File name: {0} \n'.format(fileName[minSNRpos]), file = f)
+        #spectra found
+        if printFiles:
+            print('ARCFILE\tInstrument\tObservationDate\tSNR', file = f)
+            for i, j in enumerate(fileName):
+                print('{0}\t{1}\t{2}\t{3}'.format(j, spectrograph[i], 
+                      obsDate[i], snr[i]), file = f)
+        if saveFile:
+            f.close()
+#    except:
+#        print('{0} not found in archive\n'.format(star), file = f)
+            
         
     def summaryList(self, filename, header = 0, instrument = None, date = None, 
                     SNR = None, saveFile = False, savePath = None, 
@@ -624,22 +604,35 @@ class ESOquery():
             
         Returns
         -------
+        noSpectra: arr
+            Array with stars with no spectra on ESO archives
         """   
-        stars = np.loadtxt(filename, dtype = str, delimiter='\t', 
-                           usecols = [0], skiprows = header)
+#        stars = np.loadtxt(filename, dtype = str, delimiter='\t', 
+#                           usecols = [0], skiprows = header)
+        stars = np.loadtxt(filename, dtype = str, delimiter = '\t', 
+                           skiprows = header)
+        for i, j in enumerate(stars):
+            stars[i] = ' '.join(stars[i].split(' ', -1)[:-2])
         now = datetime.now()
         if saveFile:
-            f = open("{0}_{1}.txt".format(filename,
+            f = open("{0}_{1}.txt".format(filename[0:-4],
                     now.strftime("%Y-%m-%dT%H:%M:%S")),"a")
         else:
-            f = stdout 
+            f = stdout
+        noSpectra = []
         for _, j in enumerate(stars):
             try:
-                self.summaryStar(j, instrument=instrument, date=date, SNR=SNR,
-                                 saveFile=saveFile, savePath=savePath, 
-                                 printFiles=printFiles)
+                self.summaryStar(j, instrument=instrument, 
+                                       date=date, SNR=SNR, fromList=f);
             except:
-                print('{0} not found in archive'.format(j), file = f)
+                noSpectra.append(j)
+                print('{0} not found in archive\n'.format(j), file = f)
         if saveFile:
             f.close()
+            f = open("{0}_noSpectra.txt".format(filename[0:-4]),"a")
+            for _, j in enumerate(noSpectra):
+                print(j, file = f)
+            f.close()
+        return np.array(noSpectra)
+
 
