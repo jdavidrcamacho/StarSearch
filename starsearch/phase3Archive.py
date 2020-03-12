@@ -7,7 +7,6 @@ from sys import maxsize, stdout
 from datetime import datetime
 np.set_printoptions(threshold = maxsize)
 from starsearch.core import Eso
-from starsearch.utils import split_str
 
 class ESOquery():
     """
@@ -16,7 +15,7 @@ class ESOquery():
     Parameters
     ----------
     user: str
-        User name used in ESO website
+        User name used for ESO website login
         
     Returns
     -------
@@ -87,7 +86,8 @@ class ESOquery():
             return instrumentDict
         
         
-    def searchStar(self, star, instrument = None, date = None, SNR = None):
+    def searchStar(self, star, instrument = None, date = None, SNR = None, 
+                   dec = None):
         """
         Return phase 3 ESO query for given star and a given instrument
         
@@ -114,6 +114,8 @@ class ESOquery():
         date = Time(date)
         if not SNR: 
             SNR = 10
+        if not dec:
+            dec = 30
         if instrument:
             search = self.eso.query_surveys(surveys = instrument, 
                                             target = star)
@@ -123,6 +125,7 @@ class ESOquery():
         try:
             search.remove_rows(Time(search['Date Obs']) < date) #Date criteria
             search.remove_rows(search['SNR (spectra)'] < SNR) #SNR critetia
+            search.remove_rows(search['DEC'] > dec) #declination critetia
         except:
             pass
         return search
@@ -493,8 +496,8 @@ class ESOquery():
     
     
     def summaryStar(self, star, instrument = None, date = None, SNR = None, 
-                    saveFile = False, savePath = None, printFiles = False, 
-                    fromList = False):
+                    dec = None, saveFile = False, savePath = None, 
+                    printFiles = False, fromList = False):
         """
         Return a summary of the spectra available of a given star
         
@@ -533,7 +536,8 @@ class ESOquery():
         if fromList:
             f = fromList
         print('*** SUMMARY of {0} ***'.format(star), file = f)
-        search = self.searchStar(star,instrument=instrument,date=date,SNR=SNR)
+        search = self.searchStar(star, instrument = instrument, date = date,
+                                 SNR = SNR, dec = dec)
         #organizing our stuff
 #        try:
         fileName = np.array(search['ARCFILE'])
@@ -572,7 +576,7 @@ class ESOquery():
             
         
     def summaryList(self, filename, header = 0, instrument = None, date = None, 
-                    SNR = None, saveFile = False, savePath = None, 
+                    SNR = None, dec = None, saveFile = False, savePath = None, 
                     printFiles = False):
         """
         Return a summary of the spectra available of the stars in a given list
@@ -593,6 +597,9 @@ class ESOquery():
         SNR: float
             Signal to noise ratio. 
             If None: SNR = 10
+        dec: float
+            Search for stars with declination lower that dec
+            If None: dec = 30
         saveFile: bool
             Save summary in a .txt file
             Default: saveFile = False
@@ -625,8 +632,8 @@ class ESOquery():
         noSpectra = [] #to add the stars with no spectra on archive
         for _, j in enumerate(stars):
             try:
-                self.summaryStar(j, instrument=instrument, 
-                                       date=date, SNR=SNR, fromList=f);
+                self.summaryStar(j, instrument=instrument, date=date, SNR=SNR, 
+                                 dec=dec, fromList=f);
             except:
                 noSpectra.append(j)
                 print('{0} not found in archive\n'.format(j), file = f)
