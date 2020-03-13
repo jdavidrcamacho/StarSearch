@@ -2,11 +2,15 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import os
-from astropy.time import Time
 from sys import maxsize, stdout
-from datetime import datetime
 np.set_printoptions(threshold = maxsize)
+
+from astropy.time import Time
+from datetime import datetime
 from starsearch.core import Eso
+from starsearch.utils import HMS2deg
+from astroquery.simbad import Simbad
+from astroquery.vizier import Vizier
 
 class ESOquery():
     """
@@ -117,20 +121,13 @@ class ESOquery():
         if not dec:
             dec = 30
         if instrument:
-            if instrument == 1:
-                print('inst=1')
-                search = self.eso.query_surveys(target = star)
-            else:
-                search = self.eso.query_surveys(surveys = instrument, 
-                                                target = star)
+            search = self.eso.query_surveys(surveys=instrument, target=star)
         else:
             search = self.eso.query_surveys(surveys = list(self.instruments), 
                                             target = star)
         try:
             search.remove_rows(Time(search['Date Obs']) < date) #Date criteria
             search.remove_rows(search['SNR (spectra)'] < SNR) #SNR critetia
-            search.remove_rows(search['DEC'] > dec) #declination critetia
-            #print('{0} - {1}'.format(star, np.mean(search['DEC'])))
         except:
             pass
         return search
@@ -501,7 +498,7 @@ class ESOquery():
     
     
     def summaryStar(self, star, instrument = None, date = None, SNR = None, 
-                    dec = None, saveFile = False, savePath = None, 
+                    saveFile = False, savePath = None, 
                     printFiles = False, fromList = False):
         """
         Return a summary of the spectra available of a given star
@@ -542,8 +539,7 @@ class ESOquery():
             f = fromList
         print('*** SUMMARY of {0} ***'.format(star), file = f)
         search = self.searchStar(star, instrument = instrument, date = date,
-                                 SNR = SNR, dec = dec)
-        print(search['DEC'])
+                                 SNR = SNR)
         #organizing our stuff
 #        try:
         fileName = np.array(search['ARCFILE'])
@@ -622,6 +618,8 @@ class ESOquery():
         """   
         stars = np.loadtxt(filename, dtype = str, delimiter = '\t', 
                            skiprows = header)
+        if not dec:
+            dec = 30
         for i, j in enumerate(stars):
             checkLash = j.find('/') #to separate the stars that have two names
             stars[i] = ' '.join(j.split(' ', -1)[:-2]) #remove last 2 columns
@@ -631,15 +629,14 @@ class ESOquery():
                 stars = np.append(stars, ' '.join(newStar[1].split(' ', -1)[:-2]))
         now = datetime.now()
         if saveFile:
-            f = open("{0}_{1}.txt".format(filename[0:-4],
-                    now.strftime("%Y-%m-%dT%H:%M:%S")),"a")
+            f = open("summary_{1}.txt".format(now.strftime("%Y-%m-%dT%H:%M:%S")),"a")
         else:
             f = stdout
         noSpectra = [] #to add the stars with no spectra on archive
         for _, j in enumerate(stars):
             try:
                 self.summaryStar(j, instrument=instrument, date=date, SNR=SNR, 
-                                 dec=dec, fromList=f);
+                                 fromList=f);
             except:
                 noSpectra.append(j)
                 print('{0} not found in archive\n'.format(j), file = f)
@@ -647,7 +644,25 @@ class ESOquery():
             f.close()
             f = open("{0}_noSpectra.txt".format(filename[0:-4]),"a")
             for _, j in enumerate(noSpectra):
-                print(j, file = f)
+                try:
+                    jSearch = Simbad.query_object(j)
+                    RAandDEC = HMS2deg(jSearch['RA'][0], jSearch['DEC'][0])
+                    if float(RAandDEC[1]) > dec:
+                        pass
+                    else:
+                        print('{0}\t{1}degress'.format(j, RAandDEC[1]), 
+                              file = f)
+                except:
+#                    try:
+#                    jSearch = Vizier.query_object(j)
+#                    RAandDEC = HMS2deg(jSearch['RA'][0], jSearch['DEC'][0])
+#                    if float(RAandDEC[1]) > dec:
+#                        pass
+#                    else:
+#                        print('{0}\t{1} degress'.format(j, RAandDEC[1]), 
+#                              file = f)
+                    print('{0} not found on SIMBAD'.format(j),
+                          file = f)
             f.close()
         return noSpectra
 
