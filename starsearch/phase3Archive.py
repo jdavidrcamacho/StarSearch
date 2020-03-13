@@ -629,7 +629,7 @@ class ESOquery():
                 stars = np.append(stars, ' '.join(newStar[1].split(' ', -1)[:-2]))
         now = datetime.now()
         if saveFile:
-            f = open("summary_{1}.txt".format(now.strftime("%Y-%m-%dT%H:%M:%S")),"a")
+            f = open("summary_{0}.txt".format(now.strftime("%Y-%m-%dT%H:%M:%S")), "a")
         else:
             f = stdout
         noSpectra = [] #to add the stars with no spectra on archive
@@ -640,9 +640,10 @@ class ESOquery():
             except:
                 noSpectra.append(j)
                 print('{0} not found in archive\n'.format(j), file = f)
+        f.close()
         if saveFile:
-            f.close()
-            f = open("{0}_noSpectra.txt".format(filename[0:-4]),"a")
+            f1 = open("{0}_noSpectra.txt".format(filename[0:-4]), "a")
+            f2 = open("{0}_checkStar.txt".format(filename[0:-4]), "a")
             for _, j in enumerate(noSpectra):
                 try:
                     jSearch = Simbad.query_object(j)
@@ -651,7 +652,7 @@ class ESOquery():
                         pass
                     else:
                         print('{0}\t{1}degress'.format(j, RAandDEC[1]), 
-                              file = f)
+                              file = f1)
                 except:
 #                    try:
 #                    jSearch = Vizier.query_object(j)
@@ -662,8 +663,8 @@ class ESOquery():
 #                        print('{0}\t{1} degress'.format(j, RAandDEC[1]), 
 #                              file = f)
                     print('{0} not found on SIMBAD'.format(j),
-                          file = f)
-            f.close()
+                          file = f2)
+            f1.close(); f2.close()
         return noSpectra
 
 
