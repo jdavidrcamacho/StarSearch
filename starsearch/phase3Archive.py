@@ -117,8 +117,12 @@ class ESOquery():
         if not dec:
             dec = 30
         if instrument:
-            search = self.eso.query_surveys(surveys = instrument, 
-                                            target = star)
+            if instrument == 1:
+                print('inst=1')
+                search = self.eso.query_surveys(target = star)
+            else:
+                search = self.eso.query_surveys(surveys = instrument, 
+                                                target = star)
         else:
             search = self.eso.query_surveys(surveys = list(self.instruments), 
                                             target = star)
@@ -126,6 +130,7 @@ class ESOquery():
             search.remove_rows(Time(search['Date Obs']) < date) #Date criteria
             search.remove_rows(search['SNR (spectra)'] < SNR) #SNR critetia
             search.remove_rows(search['DEC'] > dec) #declination critetia
+            #print('{0} - {1}'.format(star, np.mean(search['DEC'])))
         except:
             pass
         return search
@@ -538,6 +543,7 @@ class ESOquery():
         print('*** SUMMARY of {0} ***'.format(star), file = f)
         search = self.searchStar(star, instrument = instrument, date = date,
                                  SNR = SNR, dec = dec)
+        print(search['DEC'])
         #organizing our stuff
 #        try:
         fileName = np.array(search['ARCFILE'])
