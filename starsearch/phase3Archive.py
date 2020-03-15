@@ -69,7 +69,8 @@ class ESOquery():
     
     def searchInstrumentSpectra(self, star, instrument = None):
         """
-        Checks how many spectra is available to downloand for a given instrument
+        Checks how many spectra is available to downloand for a given 
+        instrument
         
         Parameters
         ----------
@@ -108,7 +109,7 @@ class ESOquery():
         instrument: str
             Name of the instrument, None for default instruments
         date: str
-            Date to search for obvervation (FORMAT: 'YYYY-MM-DD')
+            Date to search for obvervation ('YYYY-MM-DD')
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio. 
@@ -177,7 +178,7 @@ class ESOquery():
         instrument: str
             Name of the instrument, None for default instruments
         date: str
-            Date to search for obvervation (FORMAT: 'YYYY-MM-DD')
+            Date to search for obvervations ('YYYY-MM-DD')
             If None: date = '1990-01-23'
             
         Returns
@@ -271,7 +272,7 @@ class ESOquery():
         downloadPatch: str
             Adress where to download data
         date: str
-            Download only the data past a certain date (FORMAT: 'YYYY-MM-DD')
+            Download only the data past a certain date ('YYYY-MM-DD')
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio. 
@@ -290,7 +291,8 @@ class ESOquery():
         print('\n*** Done ***\n')
         
         
-    def getFEROSdata(self, star, downloadPath = None , date = None, SNR = None):
+    def getFEROSdata(self, star, downloadPath = None , date = None, 
+                     SNR = None):
         """
         Download FEROS spectra of a given star
         
@@ -301,7 +303,7 @@ class ESOquery():
         downloadPath: str
             Adress where to download data
         date: str
-            Download only the data oast than a certain date (FORMAT: 'YYYY-MM-DD')
+            Download only the data oast than a certain date ('YYYY-MM-DD')
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio. 
@@ -331,7 +333,7 @@ class ESOquery():
         downloadPath: str
             Adress where to download data
         date: str
-            Download only the data past than a certain date (FORMAT: 'YYYY-MM-DD')
+            Download only the data past than a certain date (YYYY-MM-DD')
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio. 
@@ -361,7 +363,7 @@ class ESOquery():
         downloadPath: str
             Adress where to download data
         date: str
-            Download only the data past than a certain date (FORMAT: 'YYYY-MM-DD')
+            Download only the data past than a certain date ('YYYY-MM-DD')
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio. 
@@ -380,7 +382,8 @@ class ESOquery():
         print('\n*** Done ***\n')
         
         
-    def getESPRESSOdata(self, star, downloadPath = None , date = None, SNR = None):
+    def getESPRESSOdata(self, star, downloadPath = None , date = None, 
+                        SNR = None):
         """
         Download ESPRESSO spectra of a given star
         
@@ -391,7 +394,7 @@ class ESOquery():
         downloadPath: str
             Adress where to download data
         date: str
-            Download only the data past than a certain date (FORMAT: 'YYYY-MM-DD')
+            Download only the data past than a certain date ('YYYY-MM-DD')
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio.
@@ -427,7 +430,7 @@ class ESOquery():
         downloadPath: str
             Adress where to download data
         date: str
-            Download only the data past than a certain date (FORMAT: 'YYYY-MM-DD')
+            Download only the data past than a certain date ('YYYY-MM-DD')
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio.
@@ -475,7 +478,7 @@ class ESOquery():
             Adress where to download data
             If None: downloadPath = '~/'
         date: str
-            Download only the data past than a certain date (FORMAT: 'YYYY-MM-DD')
+            Download only the data past than a certain date ('YYYY-MM-DD')
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio.
@@ -538,7 +541,8 @@ class ESOquery():
         if savePath:
             os.chdir(savePath)
         if saveFile:
-            f = open("{0}_{1}.txt".format(star,now.strftime("%Y-%m-%dT%H:%M:%S")),"a")
+            f = open("{0}_{1}.txt".format(star,
+                     now.strftime("%Y-%m-%dT%H:%M:%S")),"a")
         else:
             f = stdout 
         if fromList:
@@ -632,10 +636,12 @@ class ESOquery():
             if checkLash != -1:
                 newStar = j.split('/')
                 stars[i] = newStar[0]
-                stars = np.append(stars, ' '.join(newStar[1].split(' ', -1)[:-2]))
+                stars = np.append(stars, ' '.join(newStar[1].split(' ', 
+                                                  -1)[:-2]))
         now = datetime.now()
         if saveFile:
-            f = open("summary_{0}.txt".format(now.strftime("%Y-%m-%dT%H:%M:%S")), "a")
+            f = open("summary_{0}.txt".format(now.strftime("%Y-%m-%dT%H:%M:%S")),
+                     "a")
         else:
             f = stdout
         noSpectra = [] #to add the stars with no spectra on archive
