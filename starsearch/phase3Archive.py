@@ -24,11 +24,14 @@ class ESOquery():
     Returns
     -------
     """
-    def __init__(self, user):
+    def __init__(self, user, store_password=False):
         super(ESOquery, self).__init__()
         self.user = user #user name 
         self.eso = Eso()
-        self.eso.login(self.user) #login to eso archive
+        if store_password:
+            self.eso.login(self.user, store_password=True) #login to eso
+        else:
+            self.eso.login(self.user)
         self.eso.ROW_LIMIT = -1 #unlimited number of search results = -1
         self.surveys = self.eso.list_surveys() #list of available surveys
         self.instruments = np.array(['FEROS', 'HARPS', 'ESPRESSO'])
