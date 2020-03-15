@@ -20,6 +20,9 @@ class ESOquery():
     ----------
     user: str
         User name used for ESO website login
+    store_password : bool
+        Optional, stores the password securely in your keyring
+        Default: store_password = False
         
     Returns
     -------
