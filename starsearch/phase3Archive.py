@@ -551,40 +551,40 @@ class ESOquery():
         search = self.searchStar(star, instrument = instrument, date = date,
                                  SNR = SNR)
         #organizing our stuff
-#        try:
-        fileName = np.array(search['ARCFILE'])
-        spectrograph = np.array(search['Instrument'])
-        obsDate = np.array(search['Date Obs'])
-        snr = np.array(search['SNR (spectra)'])
-        #number of spectra
-        print('Total number of spectra found: {0}'.format(snr.size), file = f)
-        value, count = np.unique(spectrograph, return_counts=True)
-        for i in range(value.size):
-            specSNR = search[search['Instrument']==value[i]]['SNR (spectra)']
-            quadSum = np.sqrt(np.sum(specSNR**2))
-            print('{0} spectra: {1}'.format(value[i], count[i]), '|',
-                  'SNR Quadratic Sum: {0}'.format(quadSum), file = f)
-        print(file = f)
-        maxSNRpos = np.argmax(snr)
-        print('Maximum SNR: {0}'.format(snr[maxSNRpos]), file = f)
-        print('Observation date: {0}'.format(obsDate[maxSNRpos]), file = f)
-        print('Instrument: {0}'.format(spectrograph[maxSNRpos]), file = f)
-        print('File name: {0} \n'.format(fileName[maxSNRpos]), file = f)
-        minSNRpos = np.argmin(snr)
-        print('Minimum SNR: {0}'.format(snr[minSNRpos]), file = f)
-        print('Observation date: {0}'.format(obsDate[minSNRpos]), file = f)
-        print('Instrument: {0}'.format(spectrograph[minSNRpos]), file = f)
-        print('File name: {0} \n'.format(fileName[minSNRpos]), file = f)
-        #spectra found
-        if printFiles:
-            print('ARCFILE\tInstrument\tObservationDate\tSNR', file = f)
-            for i, j in enumerate(fileName):
-                print('{0}\t{1}\t{2}\t{3}'.format(j, spectrograph[i], 
-                      obsDate[i], snr[i]), file = f)
-        if saveFile:
-            f.close()
-#    except:
-#        print('{0} not found in archive\n'.format(star), file = f)
+        try:
+            fileName = np.array(search['ARCFILE'])
+            spectrograph = np.array(search['Instrument'])
+            obsDate = np.array(search['Date Obs'])
+            snr = np.array(search['SNR (spectra)'])
+            #number of spectra
+            print('Total number of spectra found: {0}'.format(snr.size), file = f)
+            value, count = np.unique(spectrograph, return_counts=True)
+            for i in range(value.size):
+                specSNR = search[search['Instrument']==value[i]]['SNR (spectra)']
+                quadSum = np.sqrt(np.sum(specSNR**2))
+                print('{0} spectra: {1}'.format(value[i], count[i]), '|',
+                      'SNR Quadratic Sum: {0}'.format(quadSum), file = f)
+            print(file = f)
+            maxSNRpos = np.argmax(snr)
+            print('Maximum SNR: {0}'.format(snr[maxSNRpos]), file = f)
+            print('Observation date: {0}'.format(obsDate[maxSNRpos]), file = f)
+            print('Instrument: {0}'.format(spectrograph[maxSNRpos]), file = f)
+            print('File name: {0} \n'.format(fileName[maxSNRpos]), file = f)
+            minSNRpos = np.argmin(snr)
+            print('Minimum SNR: {0}'.format(snr[minSNRpos]), file = f)
+            print('Observation date: {0}'.format(obsDate[minSNRpos]), file = f)
+            print('Instrument: {0}'.format(spectrograph[minSNRpos]), file = f)
+            print('File name: {0} \n'.format(fileName[minSNRpos]), file = f)
+            #spectra found
+            if printFiles:
+                print('ARCFILE\tInstrument\tObservationDate\tSNR', file = f)
+                for i, j in enumerate(fileName):
+                    print('{0}\t{1}\t{2}\t{3}'.format(j, spectrograph[i], 
+                          obsDate[i], snr[i]), file = f)
+            if saveFile:
+                f.close()
+        except:
+            print('{0} not found in archive\n'.format(star), file = f)
             
         
     def summaryList(self, filename, header = 0, instrument = None, date = None, 
