@@ -627,7 +627,9 @@ class ESOquery():
             Array with the stars with no spectra on ESO archives
         """   
         stars = np.loadtxt(filename, dtype = str, delimiter = '\t', 
-                           skiprows = header)
+                           skiprows = header, usecols=(1))
+        for i, j in enumerate(stars):
+            stars[i] = j.split('_')[0] #to fix the stars names
         if not dec:
             dec = 30
         for i, j in enumerate(stars):
@@ -672,7 +674,8 @@ class ESOquery():
         return noSpectra
     
     
-    def searchSWEETCatDatabase(self, filename, mag, higher = True):
+    def searchSWEETCatDatabase(self, filename, mag, higher = True, 
+                               savePath = None):
         """
         Compares the SWEET-Cat spectra with the one available on the ESO
         archive
@@ -687,50 +690,67 @@ class ESOquery():
             True if we want to search stars with a magnitude higher than mag, 
             False is we want to search stars with magnitude lower than mag.
             Default: higher = True
+        savePath: str
+            Path to save the generated .txt files
             
         Returns
         -------
+        01_spectra: file
+            List of stars of ESO archive and respective signal-to-noise ratio
+        02_spectraTBC: file
+            List of stars to check manually (TBC = To Be Checked) 
+            Either has a different name or no magnitude found on SIMBAD
+        03_noSpectra: file
+            List of stars with either no spectra on ESO archive or magnitude
+            outside our specifications
         """
         spectra = np.loadtxt(filename, skiprows=2, usecols=(0), 
                              delimiter='\t', unpack=True, dtype=np.str)
         rv, sn, sn2 = np.loadtxt(filename, skiprows=2, usecols=(1,2,3), 
                                  delimiter='\t', unpack=True)
         t = datetime.now()
-        f = open("spectra_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),"a")
-        print('spectra\tRV\tSN\tSN2\tquadSN', file = f)
-        print('-------\t--\t--\t---\t------', file = f)
-        f.close()
+        f1 = open("01_spectra_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),"a")
+        print('spectra\tRV\tSN\tSN2\tquadSN\tmag', file = f1)
+        print('-------\t--\t--\t---\t------\t---', file = f1)
+        f2 = open("02_spectraTBC_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),"a")
+        print('spectra\tRV\tSN\tSN2\tquadSN\tmag', file = f2)
+        print('-------\t--\t--\t---\t------\t---', file = f2)
+        f3 = open("03_noSpectra_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),"a")
+        print('star\tmag', file = f3)
+        print('----\t---', file = f3)
         for i, j in enumerate(spectra):
             spectra[i] = j.split('_')[0] #to fix the stars names
             if higher:
                 try: 
                     starMag = Simbad.query_object(spectra[i])['FLUX_V'][0]
-                    if mag <= starMag:
-                        print('searching {0}, mag={1}'.format(spectra[i], 
-                                                              starMag))
+                    starMag = np.round(starMag, 2)
+                    if starMag >= mag:
+                        print('searching {0}, mag ='.format(spectra[i]), 
+                              starMag)
                         search = self.searchStar(spectra[i], SNR = 1)
                         spectrograph = np.array(search['Instrument'])
-                        snr = np.array(search['SNR (spectra)'])
                         #number of spectra
-                        value, count = np.unique(spectrograph, 
-                                                 return_counts=True)
+                        value, count = np.unique(spectrograph, return_counts=True)
                         for k in range(value.size):
                             specSNR = search[search['Instrument']==value[k]]['SNR (spectra)']
-                            quadSum = np.sqrt(np.sum(specSNR**2))
+                            quadSum = np.round(np.sqrt(np.sum(specSNR**2)), 2)
                             print('{0} spectra: {1}'.format(value[k], count[k]), '|',
                                   'SNR Quadratic Sum: {0}'.format(quadSum))
-                            
-                            print
-                            
+                            print('{0}_{1}\t{2}\t{3}\t{4}\t{5}\t'.format(spectra[i], 
+                                  value[k], rv[i], sn[i], sn2[i], quadSum),
+                                    starMag, file = f1)
                         print()
                     else:
-                        print('not searching {0}, mag={1}'.format(spectra[i], 
-                                                                  starMag))
+                        print('{0}, mag ='.format(spectra[i]), starMag, 
+                              file = f3)
                 except:
+                    try:
+                        starMag = Simbad.query_object(spectra[i])['FLUX_V'][0]
+                        starMag = np.round(starMag, 2)
+                    except:
+                        starMag = '--'
                     print('NOT IN eso ARCHIVE\n')
-#            else:
-#                if mag <= Simbad.query_object(j)['FLUX_V'][0]:
-#                    #summary star
-#                else:
-#                    pass
+                    print('{0}\t{1}\t{2}\t{3}\tNo\t'.format(spectra[i], 
+                           rv[i],sn[i],sn2[i]), starMag, file = f2)
+        f1.close(); f2.close()
         return 0
