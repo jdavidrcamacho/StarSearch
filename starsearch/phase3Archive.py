@@ -97,8 +97,7 @@ class ESOquery():
             return instrumentDict
         
         
-    def searchStar(self, star, instrument = None, date = None, SNR = None, 
-                   dec = None):
+    def searchStar(self, star, instrument = None, date = None, SNR = None):
         """
         Return phase 3 ESO query for given star and a given instrument
         
@@ -113,8 +112,8 @@ class ESOquery():
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio. 
-            If None: SNR = 10
-            
+            If None: SNR = 0
+
         Returns
         -------
         search: table
@@ -124,9 +123,7 @@ class ESOquery():
             date = Time('1990-01-23')
         date = Time(date)
         if not SNR: 
-            SNR = 10
-        if not dec:
-            dec = 30
+            SNR = 0
         if instrument:
             search = self.eso.query_surveys(surveys=instrument, target=star)
         else:
@@ -252,6 +249,7 @@ class ESOquery():
         -------
         """
         checkInstruments = self.searchInstruments(star)
+        print('check', checkInstruments)
         for _, j in enumerate(np.array([instrument])):
             print('\n*** Searching for {0} results ***\n'.format(j))
             if j in checkInstruments:
@@ -489,7 +487,6 @@ class ESOquery():
         """
         if downloadPath is None:
             downloadPath = '~/'
-        savePath = downloadPath
         stars = np.loadtxt(filename, dtype = str, delimiter='\t', 
                            usecols = [0], skiprows = header)
         for _, j in enumerate(stars):
@@ -499,11 +496,10 @@ class ESOquery():
             try:
                 if not os.path.exists('{0}/{1}'.format(downloadPath, j)):
                     os.makedirs('{0}/{1}'.format(downloadPath, j))
-                downloadPath = '{0}/{1}'.format(downloadPath, j)
-                self.getALLdata(j, downloadPath, date, SNR)
+                downloadPath4Star = '{0}/{1}'.format(downloadPath, j)
+                self.getALLdata(j, downloadPath4Star, date, SNR)
             except:
                 print('Star not found in ESO archive!\n')
-            downloadPath = savePath
     
     
     def summaryStar(self, star, instrument = None, date = None, SNR = None, 
@@ -586,7 +582,7 @@ class ESOquery():
         except:
             print('{0} not found in archive\n'.format(star), file = f)
             
-        
+            
     def summaryList(self, filename, header = 0, instrument = None, date = None, 
                     SNR = None, dec = None, saveFile = False, savePath = None, 
                     printFiles = False):
@@ -611,7 +607,7 @@ class ESOquery():
             If None: SNR = 10
         dec: float
             Search for stars with declination lower that dec
-            If None: dec = 30
+            If None: dec = 180
         saveFile: bool
             Save summary in a .txt file
             Default: saveFile = False
@@ -625,13 +621,13 @@ class ESOquery():
         -------
         noSpectra: arr
             Array with the stars with no spectra on ESO archives
-        """   
-        stars = np.loadtxt(filename, dtype = str, delimiter = '\t', 
-                           skiprows = header, usecols=(1))
-        for i, j in enumerate(stars):
-            stars[i] = j.split('_')[0] #to fix the stars names
+        """
+        if savePath:
+            os.chdir(savePath)
+        stars = np.loadtxt(filename, skiprows = header, usecols=(0),
+                           dtype = str, delimiter = '\t')
         if not dec:
-            dec = 30
+            dec = 180
         for i, j in enumerate(stars):
             checkLash = j.find('/') #to separate the stars that have two names
             stars[i] = ' '.join(j.split(' ', -1)[:-2]) #remove last 2 columns
@@ -649,6 +645,7 @@ class ESOquery():
         noSpectra = [] #to add the stars with no spectra on archive
         for _, j in enumerate(stars):
             try:
+                print(j)
                 self.summaryStar(j, instrument=instrument, date=date, SNR=SNR, 
                                  fromList=f);
             except:
@@ -675,7 +672,7 @@ class ESOquery():
     
     
     def searchSWEETCatDatabase(self, filename, mag, higher = True, 
-                               savePath = None):
+                               savePath = None, download = False):
         """
         Compares the SWEET-Cat spectra with the one available on the ESO
         archive
@@ -692,6 +689,9 @@ class ESOquery():
             Default: higher = True
         savePath: str
             Path to save the generated .txt files
+        download: bool
+            True if we want to download the spectra
+            Default: download = False
             
         Returns
         -------
@@ -701,23 +701,33 @@ class ESOquery():
             List of stars to check manually (TBC = To Be Checked) 
             Either has a different name or no magnitude found on SIMBAD
         03_noSpectra: file
-            List of stars with either no spectra on ESO archive or magnitude
-            outside our specifications
+            List of stars with either no spectra on ESO archive or with 
+            magnitude outside our specifications
+        stars: array
+            Array with the star from 01_spectra file
         """
+        if savePath:
+            os.chdir(savePath)
+        else:
+            savePath = 'spectra/'
         spectra = np.loadtxt(filename, skiprows=2, usecols=(0), 
                              delimiter='\t', unpack=True, dtype=np.str)
         rv, sn, sn2 = np.loadtxt(filename, skiprows=2, usecols=(1,2,3), 
                                  delimiter='\t', unpack=True)
         t = datetime.now()
-        f1 = open("01_spectra_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),"a")
+        f1 = open("01_spectra_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),
+                  "a")
         print('spectra\tRV\tSN\tSN2\tquadSN\tmag', file = f1)
         print('-------\t--\t--\t---\t------\t---', file = f1)
-        f2 = open("02_spectraTBC_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),"a")
+        f2 = open("02_spectraTBC_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),
+                  "a")
         print('spectra\tRV\tSN\tSN2\tquadSN\tmag', file = f2)
         print('-------\t--\t--\t---\t------\t---', file = f2)
-        f3 = open("03_noSpectra_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),"a")
+        f3 = open("03_noSpectra_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),
+                  "a")
         print('star\tmag', file = f3)
         print('----\t---', file = f3)
+        stars = []
         for i, j in enumerate(spectra):
             spectra[i] = j.split('_')[0] #to fix the stars names
             if higher:
@@ -734,14 +744,15 @@ class ESOquery():
                         for k in range(value.size):
                             specSNR = search[search['Instrument']==value[k]]['SNR (spectra)']
                             quadSum = np.round(np.sqrt(np.sum(specSNR**2)), 2)
-                            print('{0} spectra: {1}'.format(value[k], count[k]), '|',
-                                  'SNR Quadratic Sum: {0}'.format(quadSum))
+                            print('{0} spectra: {1}'.format(value[k], count[k]), 
+                                  '|', 'SNR Quadratic Sum: {0}'.format(quadSum))
+                            stars.append(spectra[i])
                             print('{0}_{1}\t{2}\t{3}\t{4}\t{5}\t'.format(spectra[i], 
                                   value[k], rv[i], sn[i], sn2[i], quadSum),
                                     starMag, file = f1)
                         print()
                     else:
-                        print('{0}, mag ='.format(spectra[i]), starMag, 
+                        print('{0}\tmag ='.format(spectra[i]), starMag, 
                               file = f3)
                 except:
                     try:
@@ -752,5 +763,22 @@ class ESOquery():
                     print('NOT IN eso ARCHIVE\n')
                     print('{0}\t{1}\t{2}\t{3}\tNo\t'.format(spectra[i], 
                            rv[i],sn[i],sn2[i]), starMag, file = f2)
-        f1.close(); f2.close()
-        return 0
+        f1.close(); f2.close(); f3.close()
+        stars = np.unique(stars) #to remove duplicates
+        if download:
+            downloadPath = savePath
+            for _, j in enumerate(stars):
+                print('*************')
+                print('*', j)
+                print('*************')
+                try:
+                    if not os.path.exists('{0}/{1}'.format(downloadPath, j)):
+                        os.makedirs('{0}/{1}'.format(downloadPath, j))
+                    downloadPath4Star = '{0}/{1}'.format(downloadPath, j)
+                    self.getALLdata(j, downloadPath4Star)
+                except:
+                    print('Star not found in ESO archive!\n')
+        return stars
+    
+    
+    
