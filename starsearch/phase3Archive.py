@@ -680,6 +680,81 @@ class ESOquery():
         return noSpectra
     
     
+    def searchSWEETCatSpectra(self, filename, table, mag=12, noHigher = True, 
+                               savePath = None, download = False):
+        """
+        Compares the SWEET-Cat spectra with the one available on the ESO
+        archive
+        
+        Parameters
+        ----------
+        filename: str
+            File with the SWEET-Cat spectra info
+        table: str
+            SWEET-cat table downloaded from the website (table.txt)
+        mag: float
+            Maximum magnitude of the stars we are searching
+            Default: mag = 12
+        savePath: str
+            Path to save the generated .txt files
+        download: bool
+            True if we want to download the spectra
+            Default: download = False
+            
+        Returns
+        -------
+        """
+        #name of the stars
+        SWEETstars= np.loadtxt(table, usecols=(0), delimiter='\t', dtype=np.str)
+        for i, j in enumerate(SWEETstars):
+            #to remove empty spaces
+            SWEETstars[i] = j.replace(" ", "")
+        #magnitudes
+        SWEETmags= np.loadtxt(table, usecols=(4), delimiter='\t', dtype=np.str)
+        if savePath:
+            os.chdir(savePath)
+        else:
+            savePath = 'spectra/'
+        spectra = np.loadtxt(filename, skiprows=2, usecols=(0), 
+                             delimiter='\t', unpack=True, dtype=np.str)
+        rv, sn, sn2 = np.loadtxt(filename, skiprows=2, usecols=(1,2,3), 
+                                 delimiter='\t', unpack=True)
+        t = datetime.now()
+        f1 = open("01_spectra_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),
+                  "a")
+        print('spectra\tRV\tSN\tSN2\tquadSN\tmag', file = f1)
+        print('-------\t--\t--\t---\t------\t---', file = f1)
+        f2 = open("02_spectraTBC_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),
+                  "a")
+        print('spectra\tRV\tSN\tSN2\tquadSN\tmag', file = f2)
+        print('-------\t--\t--\t---\t------\t---', file = f2)
+        f3 = open("03_noSpectra_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),
+                  "a")
+        print('star\tmag', file = f3)
+        print('----\t---', file = f3)
+        stars = []
+        starSN, starSN2, starQuadSum, starName = [], [], [], []
+        for i, j in enumerate(spectra):
+            spectra[i] = j.split('_')[0] #to fix the stars names
+            try: 
+                #search magnitudes in SIMBAD
+                starMag = Simbad.query_object(spectra[i])['FLUX_V'][0]
+                if np.float(starMag) is np.nan:
+                    position= np.where( SWEETstars == spectra[i])
+                    starMag = SWEETmags[position]
+            except:
+                position= np.where( SWEETstars == spectra[i])
+                starMag = SWEETmags[position]
+            starMag = np.round(float(starMag), 2)
+            if starMag <= mag:
+                try:
+                    search = self.searchStar(spectra[i], SNR = 1)
+                    spectrograph = np.array(search['Instrument'])
+                    
+                except TypeError:
+                    print(spectra[i], 'not in archive')
+        
+        
     def searchSWEETCatDatabase(self, filename, mag, noHigher = True, 
                                savePath = None, download = False):
         """
