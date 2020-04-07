@@ -747,14 +747,17 @@ class ESOquery():
         stars = []
         starSN, starSN2, starQuadSum, starName = [], [], [], []
         for i, j in enumerate(spectra):
+            print('SPECCTRAAAAAAA', j)
             spectra[i] = j.split('_')[0] #to fix the stars names
             try: 
                 #search magnitudes in SIMBAD
                 starMag = Simbad.query_object(spectra[i])['FLUX_V'][0] #<- ERROR HERE
+                print('STAR MAG', starMag)
                 if np.float(starMag) is np.nan:
                     try:
                         position= np.where( SWEETstars == spectra[i])
                         starMag = np.round(float(SWEETmags[position]), 2)
+                        print('STAR MAG again', starMag)
                     except ValueError:
                         starMag = '--'
                         print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
@@ -762,6 +765,7 @@ class ESOquery():
             except:
                 try:
                     position= np.where( SWEETstars == spectra[i])
+                    print('exp try', SWEETmags[position])
                     starMag = np.round(float(SWEETmags[position]), 2)
                 except ValueError:
                     starMag = '--'
