@@ -703,6 +703,18 @@ class ESOquery():
             
         Returns
         -------
+        01_spectra: file
+            List of stars of ESO archive and respective signal-to-noise ratio
+        02_spectraTBC: file
+            List of stars to check manually (TBC = To Be Checked) 
+            Either has a different name or no magnitude found on SIMBAD
+        03_noSpectra: file
+            List of stars with either no spectra on ESO archive or with 
+            magnitude outside our specifications
+        stars: array
+            Array with the star from 01_spectra file
+        stars2download: array
+            Array with the stars to be downloaded
         """
         #name of the stars
         SWEETstars= np.loadtxt(table, usecols=(0), delimiter='\t', dtype=np.str)
@@ -738,21 +750,45 @@ class ESOquery():
             spectra[i] = j.split('_')[0] #to fix the stars names
             try: 
                 #search magnitudes in SIMBAD
-                starMag = Simbad.query_object(spectra[i])['FLUX_V'][0]
+                starMag = Simbad.query_object(spectra[i])['FLUX_V'][0] #<- ERROR HERE
                 if np.float(starMag) is np.nan:
-                    position= np.where( SWEETstars == spectra[i])
-                    starMag = SWEETmags[position]
+                    try:
+                        position= np.where( SWEETstars == spectra[i])
+                        starMag = np.round(float(SWEETmags[position]), 2)
+                    except ValueError:
+                        starMag = '--'
+                        print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
+                              rv[i], sn[i], sn2[i]), starMag, file = f2)
             except:
-                position= np.where( SWEETstars == spectra[i])
-                starMag = SWEETmags[position]
-            starMag = np.round(float(starMag), 2)
-            if starMag <= mag:
                 try:
-                    search = self.searchStar(spectra[i], SNR = 1)
-                    spectrograph = np.array(search['Instrument'])
+                    position= np.where( SWEETstars == spectra[i])
+                    starMag = np.round(float(SWEETmags[position]), 2)
+                except ValueError:
+                    starMag = '--'
+                    print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
+                          rv[i], sn[i], sn2[i]), starMag, file = f2)
                     
-                except TypeError:
-                    print(spectra[i], 'not in archive')
+#            if starMag is float and starMag <= mag:
+#                try:
+#                    search = self.searchStar(spectra[i], SNR = 1)
+#                    spectrograph = np.array(search['Instrument'])
+#                except TypeError:
+#                    print(spectra[i], 'not in archive')
+                    
+                    
+                    
+                    
+                    
+        f1.close(); f2.close(); f3.close()
+        stars2download = [] # compare SN, SN2 and quadSum
+        for i, j in enumerate(starQuadSum):
+            if j > (starSN[i] and starSN2[i]):
+                stars2download.append(starName[i])
+        #to remove duplicates
+        stars, stars2download = np.unique(stars), np.unique(stars2download)
+        if download:
+            self._downloadSWEETCatSpectra(stars2download, savePath)
+        return stars, stars2download
         
         
     def searchSWEETCatDatabase(self, filename, mag, noHigher = True, 
