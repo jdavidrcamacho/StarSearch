@@ -708,7 +708,7 @@ class ESOquery():
         02_spectraTBC: file
             List of stars to check manually (TBC = To Be Checked) 
             Either has a different name or no magnitude found on SIMBAD
-        03_noSpectra: file
+        03_noSpectraFound: file
             List of stars with either no spectra on ESO archive or with 
             magnitude outside our specifications
         stars: array
@@ -727,8 +727,11 @@ class ESOquery():
             os.chdir(savePath)
         else:
             savePath = 'spectra/'
+        print()
         spectra = np.loadtxt(filename, skiprows=2, usecols=(0), 
                              delimiter='\t', unpack=True, dtype=np.str)
+        spectraInst = []
+        print()
         rv, sn, sn2 = np.loadtxt(filename, skiprows=2, usecols=(1,2,3), 
                                  delimiter='\t', unpack=True)
         t = datetime.now()
@@ -740,58 +743,69 @@ class ESOquery():
                   "a")
         print('spectra\tRV\tSN\tSN2\tquadSN\tmag', file = f2)
         print('-------\t--\t--\t---\t------\t---', file = f2)
-        f3 = open("03_noSpectra_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),
+        f3 = open("03_noSpectraFound_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),
                   "a")
         print('star\tmag', file = f3)
         print('----\t---', file = f3)
         stars = []
         starSN, starSN2, starQuadSum, starName = [], [], [], []
         for i, j in enumerate(spectra):
-            print('SPECCTRAAAAAAA', j)
-            spectra[i] = j.split('_')[0] #to fix the stars names
-            try: 
+            nameSpliting = np.array(j.split('_'))
+            spectra[i] = nameSpliting[0] #to fix the stars names
+            spectraInst.append(nameSpliting[1]) #instrument
+            try:
                 #search magnitudes in SIMBAD
                 starMag = Simbad.query_object(spectra[i])['FLUX_V'][0] #<- ERROR HERE
-                print('STAR MAG', starMag)
+                
                 if np.float(starMag) is np.nan:
                     try:
                         position= np.where( SWEETstars == spectra[i])
                         starMag = np.round(float(SWEETmags[position]), 2)
-                        print('STAR MAG again', starMag)
                     except ValueError:
                         starMag = '--'
+                        print('spectra i', spectra[i])
                         print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
                               rv[i], sn[i], sn2[i]), starMag, file = f2)
             except:
                 try:
                     position= np.where( SWEETstars == spectra[i])
-                    print('exp try', SWEETmags[position])
                     starMag = np.round(float(SWEETmags[position]), 2)
-                except ValueError:
+                except:
                     starMag = '--'
                     print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
                           rv[i], sn[i], sn2[i]), starMag, file = f2)
-                    
-#            if starMag is float and starMag <= mag:
-#                try:
-#                    search = self.searchStar(spectra[i], SNR = 1)
-#                    spectrograph = np.array(search['Instrument'])
-#                except TypeError:
-#                    print(spectra[i], 'not in archive')
-                    
-                    
-                    
-                    
-                    
+            if type(starMag) is (np.float32 or np.float64) and starMag <= mag:
+                try:
+                    search = self.searchStar(spectra[i], SNR = 1)
+                    spectrograph = np.array(search['Instrument'])
+                    #number of spectra
+                    value, count = np.unique(spectrograph, return_counts=True)
+                    for k in range(value.size):
+                        specSNR = search[search['Instrument']==value[k]]['SNR (spectra)']
+                        quadSum = np.round(np.sqrt(np.sum(specSNR**2)), 2)
+                        stars.append(spectra[i])
+                        if value[k] == spectraInst[i]:
+                            print('{0}_{1}\t{2}\t{3}\t{4}\t{5}\t'.format(spectra[i], 
+                                  value[k], rv[i], sn[i], sn2[i], quadSum),
+                                    starMag, file = f1)
+                        else:
+                            print('{0}_{1}\t--\t--\t--\t{2}\t'.format(spectra[i], 
+                                  value[k], quadSum),
+                                    starMag, file = f1)
+                    starName.append(spectra[i]); starQuadSum.append(quadSum)
+                    starSN.append(sn[i]); starSN2.append(sn2[i]); print()
+                except TypeError:
+                    print('{0}\t{1}'.format(spectra[i], starMag), file=f3)
+        
         f1.close(); f2.close(); f3.close()
         stars2download = [] # compare SN, SN2 and quadSum
         for i, j in enumerate(starQuadSum):
-            if j > (starSN[i] and starSN2[i]):
+            if (j>(starSN[i] and starSN2[i]) and (starSN[i]<300 or starSN2[i]<300)):
                 stars2download.append(starName[i])
+                if download:
+                    self._downloadSWEETCatSpectra(starName[i], savePath)
         #to remove duplicates
         stars, stars2download = np.unique(stars), np.unique(stars2download)
-        if download:
-            self._downloadSWEETCatSpectra(stars2download, savePath)
         return stars, stars2download
         
         
