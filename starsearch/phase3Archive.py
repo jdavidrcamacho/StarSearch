@@ -803,7 +803,7 @@ class ESOquery():
             if (j>(starSN[i] and starSN2[i]) and (starSN[i]<300 or starSN2[i]<300)):
                 stars2download.append(starName[i])
                 if download:
-                    self._downloadSWEETCatSpectra(starName[i], savePath)
+                    self._downloadSWEETCatSpectra(stars2download[-1], savePath)
         #to remove duplicates
         stars, stars2download = np.unique(stars), np.unique(stars2download)
         return stars, stars2download
@@ -961,15 +961,14 @@ class ESOquery():
         A bunch of folders (1 per star) with the spectra
         """
         downloadPath = savePath
-        for _, j in enumerate(stars):
-            print('*************')
-            print('*', j)
-            print('*************')
-            try:
-                if not os.path.exists('{0}/{1}'.format(downloadPath, j)):
-                    os.makedirs('{0}/{1}'.format(downloadPath, j))
-                downloadPath4Star = '{0}/{1}'.format(downloadPath, j)
-                self.getALLdata(j, downloadPath4Star)
-            except:
-                print('Star not found in ESO archive!\n')
+        print('*************')
+        print('*', stars)
+        print('*************')
+        try:
+            if not os.path.exists('{0}/{1}'.format(downloadPath, j)):
+                os.makedirs('{0}/{1}'.format(downloadPath, j))
+            downloadPath4Star = '{0}/{1}'.format(downloadPath, j)
+            self.getALLdata(j, downloadPath4Star)
+        except:
+            print('Star not found in ESO archive!\n')
         return 0
