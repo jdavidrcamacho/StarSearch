@@ -28,7 +28,7 @@ class Conf(_config.ConfigNamespace):
     Configuration parameters for `astroquery.eso`.
     """
     row_limit = _config.ConfigItem(
-        50,
+        -1,
         'Maximum number of rows returned (set to -1 for unlimited).')
     username = _config.ConfigItem(
         "",
