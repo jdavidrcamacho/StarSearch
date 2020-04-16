@@ -2,7 +2,8 @@
 # StarSearch
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jdavidrcamacho/tedi/blob/master/LICENSE)
 
-ESO archive search\
+This small package allows you to search for phase 3 spectra on the ESO archive
+
 You can install the stable version with pip:
 
         $ pip install starsearch
@@ -10,6 +11,8 @@ You can install the stable version with pip:
 Or download the unstable version's repository and in the terminal type:
 
         $ python setup.py develop
+
+Check the [wiki page](https://github.com/jdavidrcamacho/StarSearch/wiki) to learn how to use it!
 
 
 ----------
@@ -27,6 +30,6 @@ Or download the unstable version's repository and in the terminal type:
 - [x] Test everything
 - [ ] Prepare examples on how to use it
 - [x] Upload it to pypi
-- [ ] Summary of spectra found on arquive
+- [x] Summary of spectra found on arquive
 - [ ] Comparison of two diferent spectra parameters
 - [ ] Test everything
