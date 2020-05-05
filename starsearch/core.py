@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 ######################## copied from astroquery package #######################
 # Licensed under a 3-clause BSD style license - see LICENSE.rst on astroquery
 from __future__ import print_function
