@@ -69,7 +69,7 @@ class EsoClass(QueryWithLogin):
         
         
     def _activate_form(self, response, form_index=0, form_id=None, inputs={},
-                       cache=False, method=None):
+                       cache=True, method=None):
         """
         Parameters
         ----------
@@ -274,7 +274,7 @@ class EsoClass(QueryWithLogin):
         return authenticated
     
     
-    def list_instruments(self, cache=False):
+    def list_instruments(self, cache=True):
         """
         List all the available instrument-specific queries offered by the ESO 
         archive.
@@ -299,7 +299,7 @@ class EsoClass(QueryWithLogin):
         return self._instrument_list
     
     
-    def list_surveys(self, cache=False):
+    def list_surveys(self, cache=True):
         """
         List all the available surveys (phase 3) in the ESO archive.
         
@@ -332,7 +332,7 @@ class EsoClass(QueryWithLogin):
         return self._survey_list
     
     
-    def query_surveys(self, surveys='', cache=False,
+    def query_surveys(self, surveys='', cache=True,
                       help=False, open_form=False, **kwargs):
         """
         Query survey Phase 3 data contained in the ESO archive.
@@ -388,7 +388,7 @@ class EsoClass(QueryWithLogin):
                 
                 
     def query_main(self, column_filters={}, columns=[],
-                   open_form=False, help=False, cache=False, **kwargs):
+                   open_form=False, help=False, cache=True, **kwargs):
         """
         Query raw data contained in the ESO archive.
         
@@ -422,7 +422,7 @@ class EsoClass(QueryWithLogin):
         
         
     def query_instrument(self, instrument, column_filters={}, columns=[],
-                         open_form=False, help=False, cache=False, **kwargs):
+                         open_form=False, help=False, cache=True, **kwargs):
         """
         Query instrument-specific raw data contained in the ESO archive.
         
@@ -459,7 +459,7 @@ class EsoClass(QueryWithLogin):
         
         
     def _query(self, url, column_filters={}, columns=[],
-               open_form=False, help=False, cache=False, **kwargs):
+               open_form=False, help=False, cache=True, **kwargs):
         table = None
         if open_form:
             webbrowser.open(url)
@@ -499,7 +499,7 @@ class EsoClass(QueryWithLogin):
                 warnings.warn("Query returned no results", NoResultsWarning)
                 
                 
-    def get_headers(self, product_ids, cache=False):
+    def get_headers(self, product_ids, cache=True):
         """
         Get the headers associated to a list of data product IDs
         This method returns a `~astropy.table.Table` where the rows correspond
@@ -838,7 +838,7 @@ class EsoClass(QueryWithLogin):
     
     
     def query_apex_quicklooks(self, project_id=None, help=False,
-                              open_form=False, cache=False, **kwargs):
+                              open_form=False, cache=True, **kwargs):
         """
         APEX data are distributed with quicklook products identified with a
         different name than other ESO products.  This query tool searches by
@@ -885,7 +885,7 @@ class EsoClass(QueryWithLogin):
             return table
         
         
-    def _print_query_help(self, url, cache=False):
+    def _print_query_help(self, url, cache=True):
         """
         Download a form and print it in a quasi-human-readable way
         """
@@ -945,7 +945,7 @@ class EsoClass(QueryWithLogin):
         return result_string
     
     
-    def _print_surveys_help(self, url, cache=False):
+    def _print_surveys_help(self, url, cache=True):
         """
         Download a form and print it in a quasi-human-readable way
         """

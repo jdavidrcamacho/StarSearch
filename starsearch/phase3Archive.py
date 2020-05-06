@@ -673,8 +673,8 @@ class ESOquery():
         return noSpectra
     
     
-    def searchSWEETCatSpectra(self, filename, table, mag=12, noHigher = True, 
-                               savePath = None, download = False):
+    def searchSWEETCatSpectra(self, filename, table, mag=12, dec = 30, 
+                              noHigher = True, savePath = None, download = False):
         """
         Compares the SWEET-Cat spectra with the one available on the ESO
         archive
@@ -688,6 +688,9 @@ class ESOquery():
         mag: float
             Maximum magnitude of the stars we are searching
             Default: mag = 12
+        dec: float
+            Search for stars with declination lower that dec
+            Default: dec = 30
         savePath: str
             Path to save the generated .txt files
         download: bool
@@ -716,6 +719,8 @@ class ESOquery():
             SWEETstars[i] = j.replace(" ", "")
         #magnitudes
         SWEETmags= np.loadtxt(table, usecols=(4), delimiter='\t', dtype=np.str)
+        #declinations
+        SWEETmags= np.loadtxt(table, usecols=(3), delimiter='\t', dtype=np.str)
         if savePath:
             os.chdir(savePath)
         else:
@@ -751,53 +756,66 @@ class ESOquery():
             nameSpliting = np.array(j.split('_'))
             spectra[i] = nameSpliting[0] #to fix the stars names
             spectraInst.append(nameSpliting[1]) #instrument
+            #search star on SIMBAD
+            starSearch = Simbad.query_object(spectra[i])
             try:
-                #search magnitudes in SIMBAD
-                starMag = Simbad.query_object(spectra[i])['FLUX_V'][0] #<- ERROR HERE
-                
-                if np.float(starMag) is np.nan:
+                RAandDEC = HMS2deg(starSearch['RA'][0], starSearch['DEC'][0])
+                starDEC = RAandDEC[1]
+            except:
+                starMag = '--'
+                print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
+                      rv[i], sn[i], sn2[i]), starMag, file = f2)
+                pass
+            if float(starDEC) > dec:
+                pass #star with declination higher than what we want
+            else:
+                #we now look at the magnitudes
+                try:
+                    starMag = starSearch['FLUX_V'][0] #<- ERROR HERE
+                    if np.float(starMag) is np.nan:
+                        try:
+                            position= np.where( SWEETstars == spectra[i])
+                            starMag = np.round(float(SWEETmags[position]), 2)
+                        except ValueError:
+                            starMag = '--'
+                            print('spectra i', spectra[i])
+                            print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
+                                  rv[i], sn[i], sn2[i]), starMag, file = f2)
+                except:
                     try:
                         position= np.where( SWEETstars == spectra[i])
                         starMag = np.round(float(SWEETmags[position]), 2)
-                    except ValueError:
+                    except:
                         starMag = '--'
-                        print('spectra i', spectra[i])
                         print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
-                              rv[i], sn[i], sn2[i]), starMag, file = f2)
-            except:
-                try:
-                    position= np.where( SWEETstars == spectra[i])
-                    starMag = np.round(float(SWEETmags[position]), 2)
-                except:
-                    starMag = '--'
-                    print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
                           rv[i], sn[i], sn2[i]), starMag, file = f2)
-            if type(starMag) is (np.float32 or np.float64) and starMag <= mag:
-                try:
-                    search = self.searchStar(spectra[i], SNR = 1)
-                    spectrograph = np.array(search['Instrument'])
-                    #number of spectra
-                    value, count = np.unique(spectrograph, return_counts=True)
-                    for k in range(value.size):
-                        specSNR = search[search['Instrument']==value[k]]['SNR (spectra)']
-                        quadSum = np.round(np.sqrt(np.sum(specSNR**2)), 2)
-                        stars.append(spectra[i])
-                        if value[k] == spectraInst[i]:
-                            print('{0}_{1}\t{2}\t{3}\t{4}\t{5}\t'.format(spectra[i], 
-                                  value[k], rv[i], sn[i], sn2[i], quadSum),
-                                    starMag, file = f1)
-                        else:
-                            print('{0}_{1}\t--\t--\t--\t{2}\t'.format(spectra[i], 
-                                  value[k], quadSum),
-                                    starMag, file = f1)
-                            print('{0}\t{1}\t{2}'.format(spectra[i], value[k], quadSum), file=f4)
-                        if (quadSum>(sn[i] and sn2[i]) and (sn[i]<300 or sn2[i]<300)):
-                                stars2download.append(spectra[i])
+                #having magnitudes now we compare spectra
+                if type(starMag) is (np.float32 or np.float64) and starMag <= mag:
+                    try:
+                        search = self.searchStar(spectra[i], SNR = 1)
+                        spectrograph = np.array(search['Instrument'])
+                        #number of spectra
+                        value, count = np.unique(spectrograph, return_counts=True)
+                        for k in range(value.size):
+                            specSNR = search[search['Instrument']==value[k]]['SNR (spectra)']
+                            quadSum = np.round(np.sqrt(np.sum(specSNR**2)), 2)
+                            stars.append(spectra[i])
+                            if value[k] == spectraInst[i]:
+                                print('{0}_{1}\t{2}\t{3}\t{4}\t{5}\t'.format(spectra[i], 
+                                      value[k], rv[i], sn[i], sn2[i], quadSum),
+                                        starMag, file = f1)
+                            else:
+                                print('{0}_{1}\t--\t--\t--\t{2}\t'.format(spectra[i], 
+                                      value[k], quadSum),
+                                        starMag, file = f1)
                                 print('{0}\t{1}\t{2}'.format(spectra[i], value[k], quadSum), file=f4)
-                    starName.append(spectra[i]); starQuadSum.append(quadSum)
-                    starSN.append(sn[i]); starSN2.append(sn2[i]); print()
-                except TypeError:
-                    print('{0}\t{1}'.format(spectra[i], starMag), file=f3)
+                            if (quadSum>(sn[i] and sn2[i]) and (sn[i]<300 or sn2[i]<300)):
+                                    stars2download.append(spectra[i])
+                                    print('{0}\t{1}\t{2}'.format(spectra[i], value[k], quadSum), file=f4)
+                        starName.append(spectra[i]); starQuadSum.append(quadSum)
+                        starSN.append(sn[i]); starSN2.append(sn2[i]); print()
+                    except TypeError:
+                        print('{0}\t{1}'.format(spectra[i], starMag), file=f3)
         f1.close(); f2.close(); f3.close(); f4.close()
         if download:
             for i, j in enumerate(stars2download):
