@@ -2,34 +2,17 @@
 # StarSearch
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jdavidrcamacho/tedi/blob/master/LICENSE)
 
-This small package allows you to search for phase 3 spectra on the ESO archive
 
-You can install the stable version with pip:
+### Main files of StarSearch
 
-        $ pip install starsearch
+`core.py` - file copied from astroquery to allow us to connect to the ESO archive
 
-Or download the unstable version's repository and in the terminal type:
+`phase3Archive.py` - file with the main functions to search and download reduced spectra from the ESO archive
 
-        $ python setup.py develop
-
-Check the [wiki page](https://github.com/jdavidrcamacho/StarSearch/wiki) to learn how to use it!
-
+`rawArchive.py` - file under development to search and download raw spectra from the ESO archive
+ 
+ `utils.py` - file with some useful functions
 
 ----------
-### Tasks
 
 <img align="right" width="180" height="180" src="https://i.imgur.com/yhIts2Y.png">
-
-- [x] Download spectra considering a given instrument
-- [x] Download spectra considering a given date
-- [x] Download spectra considering a given SNR
-- [x] Test everything
-- [x] Download spectra from a list of stars
-- [x] Copy astroquery eso files 
-- [x] Adapt astroquery files to work on StarSearch
-- [x] Test everything
-- [ ] Prepare examples on how to use it
-- [x] Upload it to pypi
-- [x] Summary of spectra found on arquive
-- [ ] Comparison of two diferent spectra parameters
-- [ ] Test everything
