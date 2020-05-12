@@ -4,8 +4,6 @@
 
 ### Examples
 
-Examples on how to use our package
-
 `workshop.ipynb` - jupyter notebook explaning the main functions of StarSearch
 
 `starExample.py` - python script with more examples
