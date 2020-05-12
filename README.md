@@ -25,7 +25,7 @@ Check the [wiki page](https://github.com/jdavidrcamacho/StarSearch/wiki) to lear
 - [x] Copy astroquery eso files 
 - [x] Adapt astroquery files to work on StarSearch
 - [x] Test everything
-- [ ] Prepare examples on how to use it
+- [x] Prepare examples on how to use it
 - [x] Upload it to pypi
 - [x] Summary of spectra found on arquive
 - [ ] Comparison of two diferent spectra parameters
