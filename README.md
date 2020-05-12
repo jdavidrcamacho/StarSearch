@@ -15,10 +15,7 @@ Or download the unstable version's repository and in the terminal type:
 Check the [wiki page](https://github.com/jdavidrcamacho/StarSearch/wiki) to learn how to use it!
 
 
-----------
-### Tasks
-
-<img align="right" width="180" height="180" src="https://i.imgur.com/yhIts2Y.png">
+### To do list
 
 - [x] Download spectra considering a given instrument
 - [x] Download spectra considering a given date
@@ -33,3 +30,6 @@ Check the [wiki page](https://github.com/jdavidrcamacho/StarSearch/wiki) to lear
 - [x] Summary of spectra found on arquive
 - [ ] Comparison of two diferent spectra parameters
 - [ ] Test everything
+
+----------
+<img align="right" width="180" height="180" src="https://i.imgur.com/yhIts2Y.png">
