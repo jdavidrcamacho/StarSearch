@@ -29,84 +29,36 @@ class ESOquery():
     """
     def __init__(self, user, store_password=False):
         super(ESOquery, self).__init__()
-        self.user = user #user name 
+        #user name
+        self.user = user
+        #login to ESO
         self.eso = Eso()
         if store_password:
-            self.eso.login(self.user, store_password=True) #login to eso
+            self.eso.login(self.user, store_password=True)
         else:
             self.eso.login(self.user)
-        self.eso.ROW_LIMIT = -1 #unlimited number of search results = -1
-        self.surveys = self.eso.list_surveys() #list of available surveys
+        #unlimited number of search results = -1
+        self.eso.ROW_LIMIT = -1
+        #list of available surveys
+        self.surveys = self.eso.list_surveys()
+        #default instruments for our package
         self.instruments = np.array(['FEROS', 'HARPS', 'ESPRESSO'])
+        #In the future we might include UVES
         self.UVES = np.array(['UVES'])
-        
-        
-    def searchInstruments(self, star):
-        """
-        Checks which instruments observed the given star and how many
-        observations it made
-        WARNING: The number of observations might be different from the number
-        of spectra available to download in phase 3
-        
-        Parameters
-        ----------
-        star: str
-            Name of the star
-            
-        Returns
-        -------
-        instrumentDict: dict
-            Instruments and number of observations
-        """
-        searchResult = self.eso.query_main(column_filters={'target': star})
-        instruments = np.unique(np.array(searchResult['Instrument']), 
-                                return_counts=True)
-        instrumentDict = dict()
-        for i, j in enumerate(instruments[0]):
-            instrumentDict[j] = instruments[1][i]
-        return instrumentDict
-    
-    
-    def searchInstrumentSpectra(self, star, instrument = None):
-        """
-        Checks how many spectra is available to downloand for a given 
-        instrument
-        
-        Parameters
-        ----------
-        star: str
-            Name of the star
-        instrument: str
-            Name of the instrument, None for default instruments
-            
-        Returns
-        -------
-        instrumentDict: dict
-            Instruments and number of observations
-        """
-        searchStar = self.searchStar(star)
-        instrumentDict = dict()
-        if instrument:
-            number = np.sum(searchStar['Instrument'] == instrument)
-            instrumentDict[instrument] = number
-            return instrumentDict
-        else:
-            for _, j in enumerate(self.instruments):
-                number = np.sum(searchStar['Instrument'] == j)
-                instrumentDict[j] = number
-            return instrumentDict
         
         
     def searchStar(self, star, instrument = None, date = None, SNR = None):
         """
-        Return phase 3 ESO query for given star and a given instrument
+        Return phase 3 ESO query for selected star. 
+        Includes other options such as instrument, date, and signal-to-noise.
         
         Parameters
         ----------
         star: str
             Name of the star
         instrument: str
-            Name of the instrument, None for default instruments
+            Name of the instrument
+            If None: Uses our default instruments
         date: str
             Date to search for obvervation ('YYYY-MM-DD')
             If None: date = '1990-01-23'
@@ -137,6 +89,65 @@ class ESOquery():
         return search
     
     
+    def searchInstruments(self, star):
+        """
+        Checks which instruments observed the selected star and how many
+        observations where made.
+        WARNING: 
+        The number of observations is the raw observations contained
+        in the ESO ARCHIVE, might (most likelly will) be different from the 
+        number of reduced spectra available to download.
+        
+        Parameters
+        ----------
+        star: str
+            Name of the star
+            
+        Returns
+        -------
+        instrumentDict: dict
+            Instruments and number of observations
+        """
+        searchResult = self.eso.query_main(column_filters={'target': star})
+        instruments = np.unique(np.array(searchResult['Instrument']), 
+                                return_counts=True)
+        instrumentDict = dict()
+        for i, j in enumerate(instruments[0]):
+            instrumentDict[j] = instruments[1][i]
+        return instrumentDict
+    
+    
+    def searchInstrumentSpectra(self, star, instrument = None):
+        """
+        Checks how many reduced spectra is available to downloand for a given 
+        instrument
+        
+        Parameters
+        ----------
+        star: str
+            Name of the star
+        instrument: str
+            Name of the instrument
+            If None: Uses our default instruments
+            
+        Returns
+        -------
+        instrumentDict: dict
+            Instruments and number of observations
+        """
+        searchStar = self.searchStar(star)
+        instrumentDict = dict()
+        if instrument:
+            number = np.sum(searchStar['Instrument'] == instrument)
+            instrumentDict[instrument] = number
+            return instrumentDict
+        else:
+            for _, j in enumerate(self.instruments):
+                number = np.sum(searchStar['Instrument'] == j)
+                instrumentDict[j] = number
+            return instrumentDict
+        
+        
     def searchObservationDate(self, star, instrument = None):
         """
         Searches for the modified Julian Date (JD - 2400000.5) of the 
@@ -147,7 +158,8 @@ class ESOquery():
         star: str
             Name of the star
         instrument: str
-            Name of the instrument, None for default instruments
+            Name of the instrument
+            If None: Uses our default instruments
             
         Returns
         -------
@@ -166,14 +178,16 @@ class ESOquery():
     
     def searchByDate(self, star, instrument = None, date = None):
         """
-        Searches for spectra of a given star past a certain date of observation
+        Searches for spectra of the selected star past the given date of 
+        observation
         
         Parameters
         ----------
         star: str
             Name of the star
         instrument: str
-            Name of the instrument, None for default instruments
+            Name of the instrument
+            If None: Uses our default instruments
         date: str
             Date to search for obvervations ('YYYY-MM-DD')
             If None: date = '1990-01-23'
@@ -193,15 +207,16 @@ class ESOquery():
     
     def searchBySNR(self, star, instrument = None, SNR = None):
         """
-        Return spectra with a signal-to-noise ratio higher than a certain 
-        SNR value
+        Searches for spectra of the selected star with a signal-to-noise ratio
+        higher than a given SNR value
         
         Parameters
         ----------
         star: str
             Name of the star
         instrument: str
-            Name of the instrument, None for default instruments
+            Name of the instrument
+            If None: Uses our default instruments
         SNR: float
             Signal to noise ratio. 
             If None: SNR = 1
@@ -218,8 +233,25 @@ class ESOquery():
         return search
     
     
-    def _searchAndDownload(self, star, instrument = None, 
-                            downloadPath = None, date = None, SNR = None):
+    def _searchAndDownload(self, star, instrument, downloadPath, date, SNR):
+        """
+        Auxiliary function to search and downlaod spectra
+        
+        Parameters
+        ----------
+        star: str
+            Name of the star
+        instrument: str
+            Name of the instrument
+        downloadPath: str
+            Adress where to download data
+        date: str
+            Download only the data younger than a certain date
+            
+        Returns
+        -------
+        Downloaded spectra
+        """
         starARCFILE = np.array(self.searchStar(star, instrument, 
                                                date, SNR)['ARCFILE'])
         if downloadPath:
@@ -229,10 +261,9 @@ class ESOquery():
             self.eso.retrieve_data(datasets = starARCFILE)
             
             
-    def _getData(self, star, instrument, downloadPath = None , date = None,
-                 SNR = None):
+    def _getData(self, star, instrument, downloadPath, date = None, SNR = None):
         """
-        Downloads spectra from a given instrument of a given star 
+        Auxiliary function to download spectra given an instrument and star 
         
         Parameters
         ----------
@@ -261,7 +292,7 @@ class ESOquery():
         
     def getALLdata(self, star, downloadPath = None , date = None, SNR = None):
         """
-        Downloads ESO spectra of a given star
+        Downloads HARPS, FEROS, and ESPRESSO reduced spectra of a selected star
         
         Parameters
         ----------
@@ -290,10 +321,9 @@ class ESOquery():
         print('\n*** Done ***\n')
         
         
-    def getFEROSdata(self, star, downloadPath = None , date = None, 
-                     SNR = None):
+    def getFEROSdata(self, star, downloadPath = None , date = None, SNR = None):
         """
-        Download FEROS spectra of a given star
+        Download FEROS spectra of a selected star
         
         Parameters
         ----------
@@ -324,7 +354,10 @@ class ESOquery():
         
     def getUVESdata(self, star, downloadPath = None , date = None, SNR = None):
         """
-        Download UVES spectra of a given star
+        Download UVES spectra of a selected star
+        WARNING:
+        Not sure if its running properly for UVES, I need to find a way of 
+        dealing with UVES fibers.
         
         Parameters
         ----------
@@ -355,7 +388,7 @@ class ESOquery():
         
     def getHARPSdata(self, star, downloadPath = None , date = None, SNR = None):
         """
-        Download HARPS spectra of a given star
+        Download HARPS spectra of a selected star
         
         Parameters
         ----------
@@ -387,7 +420,7 @@ class ESOquery():
     def getESPRESSOdata(self, star, downloadPath = None , date = None, 
                         SNR = None):
         """
-        Download ESPRESSO spectra of a given star
+        Download ESPRESSO spectra of a selected star
         
         Parameters
         ----------
@@ -416,67 +449,23 @@ class ESOquery():
         print('\n*** Done ***\n')
         
         
-    def readFILE(self, filename, instrument = None, downloadPath = None, 
-                 date = None, SNR = None):
+    def getFILEdata(self, filename, header = 0, column = 0,
+                    downloadPath = None, date = None, SNR = None):
         """
-        Load SWEET-Cat stars catalogue. Basically a copy of np.loadtxt() but 
-        thinking in using it on SWEET-Cat.
-        Each row in the text file must have the same number of columns.
+        Search and downloads spectra from FEROS, HARPS, amd ESPRESSO from a
+        given file with stars
+        WARNING
     
         Parameters
         ----------
         filename : str
-            File, filename, or generator to read. 
-            filename = '~/WEBSITE_online.rdb'
-        instrument: str
-            Name of the instrument, None for default instruments
-        downloadPath: str
-            Adress where to download data
-        date: str
-            Download only the data past than a certain date ('YYYY-MM-DD')
-            If None: date = '1990-01-23'
-        SNR: float
-            Signal to noise ratio.
-            If None: SNR = 10
-            
-        Returns
-        -------
-        starsInArchive : array
-            List of stars found on ESO archive
-        starsNotInArchive: array
-            List of stars not found on ESO archive
-        """
-        stars = np.loadtxt(filename, dtype=str, delimiter='\t', 
-                           usecols=[0], skiprows=0)
-        starsInArchive = np.array([])
-        starsNotInArchive = np.array([])
-        for _, j in enumerate(stars):
-            print('*************')
-            print('*', j)
-            print('*************')
-            try:
-                self.searchStar(j, instrument, date, SNR)
-                starsInArchive = np.append(starsInArchive, j)
-                print('Star found in ESO archive.\n')
-            except:
-                starsNotInArchive = np.append(starsNotInArchive, j)
-                print('Star not found in ESO archive!\n')
-        return starsInArchive, starsNotInArchive
-    
-    
-    def getFILEdata(self, filename, header = 0, downloadPath = None, 
-                    date = None, SNR = None):
-        """
-        Search and downloads spectra for a file with stars
-    
-        Parameters
-        ----------
-        filename : str
-            File, filename, or generator to read. 
-            Example: filename = '~/WEBSITE_online.rdb'
+            File name 
         header: int
             Number of header lines to skip
             Default: header = 0
+        column: int
+            Number of the column to read
+            Default: column = 0
         downloadPath: str
             Adress where to download data
             If None: downloadPath = '~/'
@@ -485,7 +474,7 @@ class ESOquery():
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio.
-            If None: SNR = 10
+            If None: SNR = 1
             
         Returns
         -------
@@ -494,7 +483,7 @@ class ESOquery():
         if downloadPath is None:
             downloadPath = '~/'
         stars = np.loadtxt(filename, dtype = str, delimiter='\t', 
-                           usecols = [0], skiprows = header)
+                           usecols = [column], skiprows = header)
         for _, j in enumerate(stars):
             print('*************')
             print('*', j)
@@ -512,20 +501,21 @@ class ESOquery():
                     saveFile = False, savePath = None, 
                     printFiles = False, fromList = False):
         """
-        Return a summary of the spectra available of a given star
+        Return a summary of the reduced spectra available of the selected star
         
         Parameters
         ----------
         star: str
             Name of the star
         instrument: str
-            Name of the instrument, None for default instruments
+            Name of the instrument
+            If None: Uses default instruments
         date: str
             Date to search for obvervation (FORMAT: 'YYYY-MM-DD')
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio. 
-            If None: SNR = 10
+            If None: SNR = 1
         saveFile: bool
             Save summary in a .txt file
             Default: saveFile = False
@@ -585,9 +575,9 @@ class ESOquery():
             print('{0} not found in archive\n'.format(star), file = f)
             
             
-    def summaryList(self, filename, header = 0, instrument = None, date = None, 
-                    SNR = None, dec = None, saveFile = False, savePath = None, 
-                    printFiles = False):
+    def summaryList(self, filename, header = 0, column = 0, instrument = None, 
+                    date = None, SNR = None, dec = None, saveFile = False, 
+                    savePath = None, printFiles = False):
         """
         Return a summary of the spectra available of the stars in a given list
         
@@ -599,6 +589,9 @@ class ESOquery():
         header: int
             Number of header lines to skip
             Default: header = 0
+        column: int
+            Number of the column to read
+            Default: column = 0
         instrument: str
             Name of the instrument, None for default instruments
         date: str
@@ -606,7 +599,7 @@ class ESOquery():
             If None: date = '1990-01-23'
         SNR: float
             Signal to noise ratio. 
-            If None: SNR = 10
+            If None: SNR = 1
         dec: float
             Search for stars with declination lower that dec
             If None: dec = 180
@@ -626,7 +619,7 @@ class ESOquery():
         """
         if savePath:
             os.chdir(savePath)
-        stars = np.loadtxt(filename, skiprows = header, usecols=(0),
+        stars = np.loadtxt(filename, skiprows = header, usecols=(column),
                            dtype = str, delimiter = '\t')
         if not dec:
             dec = 180
@@ -671,6 +664,57 @@ class ESOquery():
                           file = f2)
             f1.close(); f2.close()
         return noSpectra
+    
+    
+############################ SWEET-cat functions ##############################
+    
+    
+    def readFILE(self, filename, instrument = None, downloadPath = None, 
+                 date = None, SNR = None):
+        """
+        Load SWEET-Cat stars catalogue. Basically a copy of np.loadtxt() but 
+        thinking in using it on SWEET-Cat.
+        Each row in the text file must have the same number of columns.
+    
+        Parameters
+        ----------
+        filename : str
+            File, filename, or generator to read. 
+            filename = '~/WEBSITE_online.rdb'
+        instrument: str
+            Name of the instrument, None for default instruments
+        downloadPath: str
+            Adress where to download data
+        date: str
+            Download only the data past than a certain date ('YYYY-MM-DD')
+            If None: date = '1990-01-23'
+        SNR: float
+            Signal to noise ratio.
+            If None: SNR = 10
+            
+        Returns
+        -------
+        starsInArchive : array
+            List of stars found on ESO archive
+        starsNotInArchive: array
+            List of stars not found on ESO archive
+        """
+        stars = np.loadtxt(filename, dtype=str, delimiter='\t', 
+                           usecols=[0], skiprows=0)
+        starsInArchive = np.array([])
+        starsNotInArchive = np.array([])
+        for _, j in enumerate(stars):
+            print('*************')
+            print('*', j)
+            print('*************')
+            try:
+                self.searchStar(j, instrument, date, SNR)
+                starsInArchive = np.append(starsInArchive, j)
+                print('Star found in ESO archive.\n')
+            except:
+                starsNotInArchive = np.append(starsNotInArchive, j)
+                print('Star not found in ESO archive!\n')
+        return starsInArchive, starsNotInArchive
     
     
     def searchSWEETCatSpectra(self, filename, table, mag=12, dec = 30, 
@@ -778,7 +822,6 @@ class ESOquery():
                             starMag = np.round(float(SWEETmags[position]), 2)
                         except ValueError:
                             starMag = '--'
-                            print('spectra i', spectra[i])
                             print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
                                   rv[i], sn[i], sn2[i]), starMag, file = f2)
                 except:
