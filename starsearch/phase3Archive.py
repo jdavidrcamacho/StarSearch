@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import numpy as np
@@ -551,7 +552,7 @@ class ESOquery():
             obsDate = np.array(search['Date Obs'])
             snr = np.array(search['SNR (spectra)'])
             #number of spectra
-            print('Total number of spectra found: {0}'.format(snr.size), file = f)
+            print('Total number of spectra found: {0:8.1f}'.format(snr.size), file = f)
             value, count = np.unique(spectrograph, return_counts=True)
             for i in range(value.size):
                 specSNR = search[search['Instrument']==value[i]]['SNR (spectra)']
@@ -571,6 +572,7 @@ class ESOquery():
                           obsDate[i], snr[i]), file = f)
             if saveFile:
                 f.close()
+        ## This expection is not correct.
         except:
             print('{0} not found in archive\n'.format(star), file = f)
             
