@@ -558,12 +558,12 @@ class ESOquery():
                 specSNR = search[search['Instrument']==value[i]]['SNR (spectra)']
                 quadSum = np.sqrt(np.sum(specSNR**2))
                 print('\n{0} spectra: {1}'.format(value[i], count[i]), '|',
-                      'SNR Quadradratic Sum: {0}'.format(quadSum), file = f)
+                      'SNR Quadradratic Sum: {0:8.1f}'.format(quadSum), file = f)
                 comparison = search[search['Instrument']==value[i]]['SNR (spectra)']
                 maxSNRpos = np.argmax(comparison)
-                print('Maximum SNR: {0}'.format(comparison[maxSNRpos]), file=f)
+                print('Maximum SNR: {0:8.1f}'.format(comparison[maxSNRpos]), file=f)
                 minSNRpos = np.argmin(comparison)
-                print('Minimum SNR: {0}'.format(comparison[minSNRpos]), file=f)
+                print('Minimum SNR: {0:8.1f}'.format(comparison[minSNRpos]), file=f)
             #spectra found
             if printFiles:
                 print('ARCFILE\tInstrument\tObservationDate\tSNR', file = f)
