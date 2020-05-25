@@ -794,9 +794,9 @@ class ESOquery():
         -------
         A bunch of folders (1 per star) with the spectra
         """
-        if savePath:
-            os.chdir(savePath)
-        else:
+
+        if savePath is None:
+            os.mkdir('spectra')
             savePath = 'spectra/'
         downloadPath = savePath
         stars = np.loadtxt(starsFile, skiprows = 2, usecols = (0), 
@@ -808,9 +808,9 @@ class ESOquery():
             print('*', j)
             print('*************')
             try:
-                if not os.path.exists('{0}/{1}'.format(downloadPath, j)):
-                    os.makedirs('{0}/{1}'.format(downloadPath, j))
-                downloadPath4Star = '{0}/{1}'.format(downloadPath, j)
+                downloadPath4Star = os.path.join(savePath, '{0}/{1}'.format(downloadPath, j))
+                if not os.path.exists(downloadPath4Star):
+                    os.makedirs(downloadPath4Star)
                 self._getData(j, inst[i], downloadPath=downloadPath4Star)
             except:
                 print('Star not found in ESO archive!\n')
