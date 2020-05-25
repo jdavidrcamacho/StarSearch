@@ -321,15 +321,16 @@ class ESOquery():
                 print('No {0} data\n'.format(j))
         print('\n*** Done ***\n')
         
-        
-    def getFEROSdata(self, star, downloadPath = None , date = None, SNR = None):
+    def getINSTRUMENTdata(self, star, instrument, downloadPath = None , date = None, SNR = None):
         """
-        Download FEROS spectra of a selected star
+        Download [INSTRUMENT] spectra of a selected star
         
         Parameters
         ----------
         star: str
             Name of the star
+        instrument: str
+            Name of the instrument; Must be one of "ESPRESSO, UVES, HARPS, FEROS"; 
         downloadPath: str
             Adress where to download data
         date: str
@@ -341,114 +342,18 @@ class ESOquery():
             
         Returns
         -------
-        Downloaded FEROS spectra
+        Downloaded [INSTRUMENT] spectra
         """
+
         checkInstruments = self.searchInstruments(star)
-        for _, j in enumerate(np.array(['FEROS'])):
-            print('\n*** Searching for {0} results ***\n'.format(j))
-            if j in checkInstruments:
-                self._searchAndDownload(star, j, downloadPath, date, SNR)
-            else:
-                print('No {0} data\n'.format(j))
+        print('\n*** Searching for {0} results ***\n'.format(instrument))
+
+        if instrument.upper() in checkInstruments:
+            self._searchAndDownload(star, instrument, downloadPath, date, SNR)
+        else:
+            print('No {0} data for {1}\n'.format(instrument, star))
         print('\n*** Done ***\n')
-        
-        
-    def getUVESdata(self, star, downloadPath = None , date = None, SNR = None):
-        """
-        Download UVES spectra of a selected star
-        WARNING:
-        Not sure if its running properly for UVES, I need to find a way of 
-        dealing with UVES fibers.
-        
-        Parameters
-        ----------
-        star: str
-            Name of the star
-        downloadPath: str
-            Adress where to download data
-        date: str
-            Download only the data past than a certain date (YYYY-MM-DD')
-            If None: date = '1990-01-23'
-        SNR: float
-            Signal to noise ratio. 
-            If None: SNR = 10
-            
-        Returns
-        -------
-        Downloaded UVES spectra
-        """
-        checkInstruments = self.searchInstruments(star)
-        for _, j in enumerate(np.array(['UVES'])):
-            print('\n*** Searching for {0} results ***\n'.format(j))
-            if j in checkInstruments:
-                self._searchAndDownload(star, j, downloadPath, date, SNR)
-            else:
-                print('No {0} data\n'.format(j))
-        print('\n*** Done ***\n')
-        
-        
-    def getHARPSdata(self, star, downloadPath = None , date = None, SNR = None):
-        """
-        Download HARPS spectra of a selected star
-        
-        Parameters
-        ----------
-        star: str
-            Name of the star
-        downloadPath: str
-            Adress where to download data
-        date: str
-            Download only the data past than a certain date ('YYYY-MM-DD')
-            If None: date = '1990-01-23'
-        SNR: float
-            Signal to noise ratio. 
-            If None: SNR = 10
-            
-        Returns
-        -------
-        Downloaded HARPS spectra
-        """
-        checkInstruments = self.searchInstruments(star)
-        for _, j in enumerate(np.array(['HARPS'])):
-            print('\n*** Searching for {0} results ***\n'.format(j))
-            if j in checkInstruments:
-                self._searchAndDownload(star, j, downloadPath, date, SNR)
-            else:
-                print('No {0} data\n'.format(j))
-        print('\n*** Done ***\n')
-        
-        
-    def getESPRESSOdata(self, star, downloadPath = None , date = None, 
-                        SNR = None):
-        """
-        Download ESPRESSO spectra of a selected star
-        
-        Parameters
-        ----------
-        star: str
-            Name of the star
-        downloadPath: str
-            Adress where to download data
-        date: str
-            Download only the data past than a certain date ('YYYY-MM-DD')
-            If None: date = '1990-01-23'
-        SNR: float
-            Signal to noise ratio.
-            If None: SNR = 10
-            
-        Returns
-        -------
-        Downloaded ESPRESSO data
-        """
-        checkInstruments = self.searchInstruments(star)
-        for _, j in enumerate(np.array(['ESPRESSO'])):
-            print('\n*** Searching for {0} results ***\n'.format(j))
-            if j in checkInstruments:
-                self._searchAndDownload(star, j, downloadPath, date, SNR)
-            else:
-                print('No {0} data\n'.format(j))
-        print('\n*** Done ***\n')
-        
+
         
     def getFILEdata(self, filename, header = 0, column = 0,
                     downloadPath = None, date = None, SNR = None):
