@@ -552,23 +552,21 @@ class ESOquery():
             except:
                 noSpectra.append(j)
                 print('{0} not found in archive\n'.format(j), file = f)
-        f.close()
         if saveFile:
-            f1 = open("{0}_noSpectra.txt".format(filename[0:-4]), "a")
-            f2 = open("{0}_checkStar.txt".format(filename[0:-4]), "a")
-            for _, j in enumerate(noSpectra):
-                try:
-                    jSearch = Simbad.query_object(j)
-                    RAandDEC = HMS2deg(jSearch['RA'][0], jSearch['DEC'][0])
-                    if float(RAandDEC[1]) > dec:
-                        pass
-                    else:
-                        print('{0}\t{1}degress'.format(j, RAandDEC[1]), 
-                              file = f1)
-                except:
-                    print('{0} not found on SIMBAD'.format(j),
-                          file = f2)
-            f1.close(); f2.close()
+            with open(os.path.join(savePath, "{0}_noSpectra.txt".format(filename[0:-4])), "a"):
+                for _, j in enumerate(noSpectra):
+                    try:
+                        jSearch = Simbad.query_object(j)
+                        RAandDEC = HMS2deg(jSearch['RA'][0], jSearch['DEC'][0])
+                        if float(RAandDEC[1]) > dec:
+                            pass
+                        else:
+                            print('{0}\t{1}degress'.format(j, RAandDEC[1]), 
+                                file = f1)
+                    except:
+                        with open(os.path.join(savePath, "{0}_checkStar.txt".format(filename[0:-4])), "a"):
+
+                            print('{0} not found on SIMBAD'.format(j), file = f2)
         return noSpectra
     
     
