@@ -404,7 +404,7 @@ class ESOquery():
     
     
     def summaryStar(self, star, instrument = None, date = None, SNR = None, 
-                    saveFile = False, savePath = None, 
+                    saveFile = False, savePath = '', 
                     printFiles = False, fromList = False):
         """
         Return a summary of the reduced spectra available of the selected star
@@ -438,11 +438,11 @@ class ESOquery():
         Print a bunch of information of the available star's spectra
         """
         now = datetime.now()
-        if savePath:
-            os.chdir(savePath)
+
+
         if saveFile:
-            f = open("{0}_{1}.txt".format(star,
-                     now.strftime("%Y-%m-%dT%H:%M:%S")),"a")
+            f = open(os.path.join(savePath, "{0}_{1}.txt".format(star,
+                     now.strftime("%Y-%m-%dT%H:%M:%S"))),"a")
         else:
             f = stdout 
         if fromList:
