@@ -321,15 +321,16 @@ class ESOquery():
                 print('No {0} data\n'.format(j))
         print('\n*** Done ***\n')
         
-        
-    def getFEROSdata(self, star, downloadPath = None , date = None, SNR = None):
+    def GetInstrumentData(self, star, instrument, downloadPath = None , date = None, SNR = None):
         """
-        Download FEROS spectra of a selected star
+        Download [INSTRUMENT] spectra of a selected star
         
         Parameters
         ----------
         star: str
             Name of the star
+        instrument: str
+            Name of the instrument; Must be one of "ESPRESSO, UVES, HARPS, FEROS"; 
         downloadPath: str
             Adress where to download data
         date: str
@@ -341,114 +342,18 @@ class ESOquery():
             
         Returns
         -------
-        Downloaded FEROS spectra
+        Downloaded [INSTRUMENT] spectra
         """
+
         checkInstruments = self.searchInstruments(star)
-        for _, j in enumerate(np.array(['FEROS'])):
-            print('\n*** Searching for {0} results ***\n'.format(j))
-            if j in checkInstruments:
-                self._searchAndDownload(star, j, downloadPath, date, SNR)
-            else:
-                print('No {0} data\n'.format(j))
+        print('\n*** Searching for {0} results ***\n'.format(instrument))
+
+        if instrument.upper() in checkInstruments:
+            self._searchAndDownload(star, instrument, downloadPath, date, SNR)
+        else:
+            print('No {0} data for {1}\n'.format(instrument, star))
         print('\n*** Done ***\n')
-        
-        
-    def getUVESdata(self, star, downloadPath = None , date = None, SNR = None):
-        """
-        Download UVES spectra of a selected star
-        WARNING:
-        Not sure if its running properly for UVES, I need to find a way of 
-        dealing with UVES fibers.
-        
-        Parameters
-        ----------
-        star: str
-            Name of the star
-        downloadPath: str
-            Adress where to download data
-        date: str
-            Download only the data past than a certain date (YYYY-MM-DD')
-            If None: date = '1990-01-23'
-        SNR: float
-            Signal to noise ratio. 
-            If None: SNR = 10
-            
-        Returns
-        -------
-        Downloaded UVES spectra
-        """
-        checkInstruments = self.searchInstruments(star)
-        for _, j in enumerate(np.array(['UVES'])):
-            print('\n*** Searching for {0} results ***\n'.format(j))
-            if j in checkInstruments:
-                self._searchAndDownload(star, j, downloadPath, date, SNR)
-            else:
-                print('No {0} data\n'.format(j))
-        print('\n*** Done ***\n')
-        
-        
-    def getHARPSdata(self, star, downloadPath = None , date = None, SNR = None):
-        """
-        Download HARPS spectra of a selected star
-        
-        Parameters
-        ----------
-        star: str
-            Name of the star
-        downloadPath: str
-            Adress where to download data
-        date: str
-            Download only the data past than a certain date ('YYYY-MM-DD')
-            If None: date = '1990-01-23'
-        SNR: float
-            Signal to noise ratio. 
-            If None: SNR = 10
-            
-        Returns
-        -------
-        Downloaded HARPS spectra
-        """
-        checkInstruments = self.searchInstruments(star)
-        for _, j in enumerate(np.array(['HARPS'])):
-            print('\n*** Searching for {0} results ***\n'.format(j))
-            if j in checkInstruments:
-                self._searchAndDownload(star, j, downloadPath, date, SNR)
-            else:
-                print('No {0} data\n'.format(j))
-        print('\n*** Done ***\n')
-        
-        
-    def getESPRESSOdata(self, star, downloadPath = None , date = None, 
-                        SNR = None):
-        """
-        Download ESPRESSO spectra of a selected star
-        
-        Parameters
-        ----------
-        star: str
-            Name of the star
-        downloadPath: str
-            Adress where to download data
-        date: str
-            Download only the data past than a certain date ('YYYY-MM-DD')
-            If None: date = '1990-01-23'
-        SNR: float
-            Signal to noise ratio.
-            If None: SNR = 10
-            
-        Returns
-        -------
-        Downloaded ESPRESSO data
-        """
-        checkInstruments = self.searchInstruments(star)
-        for _, j in enumerate(np.array(['ESPRESSO'])):
-            print('\n*** Searching for {0} results ***\n'.format(j))
-            if j in checkInstruments:
-                self._searchAndDownload(star, j, downloadPath, date, SNR)
-            else:
-                print('No {0} data\n'.format(j))
-        print('\n*** Done ***\n')
-        
+
         
     def getFILEdata(self, filename, header = 0, column = 0,
                     downloadPath = None, date = None, SNR = None):
@@ -499,7 +404,7 @@ class ESOquery():
     
     
     def summaryStar(self, star, instrument = None, date = None, SNR = None, 
-                    saveFile = False, savePath = None, 
+                    saveFile = False, savePath = '', 
                     printFiles = False, fromList = False):
         """
         Return a summary of the reduced spectra available of the selected star
@@ -533,11 +438,11 @@ class ESOquery():
         Print a bunch of information of the available star's spectra
         """
         now = datetime.now()
-        if savePath:
-            os.chdir(savePath)
+
+
         if saveFile:
-            f = open("{0}_{1}.txt".format(star,
-                     now.strftime("%Y-%m-%dT%H:%M:%S")),"a")
+            f = open(os.path.join(savePath, "{0}_{1}.txt".format(star,
+                     now.strftime("%Y-%m-%dT%H:%M:%S"))),"a")
         else:
             f = stdout 
         if fromList:
@@ -619,8 +524,7 @@ class ESOquery():
         noSpectra: arr
             Array with the stars with no spectra on ESO archives
         """
-        if savePath:
-            os.chdir(savePath)
+
         stars = np.loadtxt(filename, skiprows = header, usecols=(column),
                            dtype = str, delimiter = '\t')
         if not dec:
@@ -635,8 +539,8 @@ class ESOquery():
                                                   -1)[:-2]))
         now = datetime.now()
         if saveFile:
-            f = open("summary_{0}.txt".format(now.strftime("%Y-%m-%dT%H:%M:%S")),
-                     "a")
+            storage_name = "summary_{0}.txt".format(now.strftime("%Y-%m-%dT%H:%M:%S"))
+            f = open(os.path.join(savePath, storage_name), "a")
         else:
             f = stdout
         noSpectra = [] #to add the stars with no spectra on archive
@@ -648,23 +552,21 @@ class ESOquery():
             except:
                 noSpectra.append(j)
                 print('{0} not found in archive\n'.format(j), file = f)
-        f.close()
         if saveFile:
-            f1 = open("{0}_noSpectra.txt".format(filename[0:-4]), "a")
-            f2 = open("{0}_checkStar.txt".format(filename[0:-4]), "a")
-            for _, j in enumerate(noSpectra):
-                try:
-                    jSearch = Simbad.query_object(j)
-                    RAandDEC = HMS2deg(jSearch['RA'][0], jSearch['DEC'][0])
-                    if float(RAandDEC[1]) > dec:
-                        pass
-                    else:
-                        print('{0}\t{1}degress'.format(j, RAandDEC[1]), 
-                              file = f1)
-                except:
-                    print('{0} not found on SIMBAD'.format(j),
-                          file = f2)
-            f1.close(); f2.close()
+            with open(os.path.join(savePath, "{0}_noSpectra.txt".format(filename[0:-4])), "a"):
+                for _, j in enumerate(noSpectra):
+                    try:
+                        jSearch = Simbad.query_object(j)
+                        RAandDEC = HMS2deg(jSearch['RA'][0], jSearch['DEC'][0])
+                        if float(RAandDEC[1]) > dec:
+                            pass
+                        else:
+                            print('{0}\t{1}degress'.format(j, RAandDEC[1]), 
+                                file = f1)
+                    except:
+                        with open(os.path.join(savePath, "{0}_checkStar.txt".format(filename[0:-4])), "a"):
+
+                            print('{0} not found on SIMBAD'.format(j), file = f2)
         return noSpectra
     
     
@@ -767,10 +669,11 @@ class ESOquery():
         SWEETmags= np.loadtxt(table, usecols=(4), delimiter='\t', dtype=np.str)
         #declinations
         SWEETmags= np.loadtxt(table, usecols=(3), delimiter='\t', dtype=np.str)
-        if savePath:
-            os.chdir(savePath)
-        else:
+
+        if savePath is None:
+            os.mkdir("spectra")  # create this folder to store the data
             savePath = 'spectra/'
+
         print()
         spectra = np.loadtxt(filename, skiprows=2, usecols=(0), 
                              delimiter='\t', unpack=True, dtype=np.str)
@@ -779,89 +682,92 @@ class ESOquery():
         rv, sn, sn2 = np.loadtxt(filename, skiprows=2, usecols=(1,2,3), 
                                  delimiter='\t', unpack=True)
         t = datetime.now()
-        f1 = open("01_starsWithSpectra_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),
-                  "a")
-        print('spectra\tRV\tSN\tSN2\tquadSN\tmag', file = f1)
-        print('-------\t--\t--\t---\t------\t---', file = f1)
-        f2 = open("02_spectraAnomalies_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),
-                  "a")
-        print('spectra\tRV\tSN\tSN2\tquadSN\tmag', file = f2)
-        print('-------\t--\t--\t---\t------\t---', file = f2)
-        f3 = open("03_noSpectraFound_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),
-                  "a")
-        print('star\tmag', file = f3)
-        print('----\t---', file = f3)
-        f4 = open("04_starsToDownload_{0}.txt".format(t.strftime("%Y-%m-%dT%H:%M:%S")),
-                  "a")
-        print('spectra\tinstr\tquadSN', file = f4)
-        print('-------\t-----\t------', file = f4)
+
+        build_name = lambda name, t: "{name}_{1}.txt".format(name, t.strftime("%Y-%m-%dT%H:%M:%S"))
+
+        spectra_name  = os.path.join(savePath, build_name("01_starsWithSpectra",t))
+
+        spectra_anom  = os.path.join(savePath, build_name("02_spectraAnomalies",t))
+        no_spectra  = os.path.join(savePath, build_name("03_noSpectraFound",t))
+        to_download  = os.path.join(savePath, build_name("04_starsToDownload",t))
+
         stars = []
         starSN, starSN2, starQuadSum, starName = [], [], [], []
         stars2download = [] #to compare SN, SN2 and quadSum
-        for i, j in enumerate(spectra):
-            nameSpliting = np.array(j.split('_'))
-            spectra[i] = nameSpliting[0] #to fix the stars names
-            spectraInst.append(nameSpliting[1]) #instrument
-            #search star on SIMBAD
-            starSearch = Simbad.query_object(spectra[i])
-            try:
-                RAandDEC = HMS2deg(starSearch['RA'][0], starSearch['DEC'][0])
-                starDEC = RAandDEC[1]
-            except:
-                starMag = '--'
-                print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
-                      rv[i], sn[i], sn2[i]), starMag, file = f2)
-                pass
-            if float(starDEC) > dec:
-                pass #star with declination higher than what we want
-            else:
-                #we now look at the magnitudes
+
+        with open(spectra_name, mode = 'a') as f1, open(spectra_anom, mode = 'a') as f2, open(no_spectra, mode = 'a') as f3, open(to_download, mode = 'a') as f4: 
+            print('spectra\tRV\tSN\tSN2\tquadSN\tmag', file = f1)
+            print('-------\t--\t--\t---\t------\t---', file = f1)
+            print('spectra\tRV\tSN\tSN2\tquadSN\tmag', file = f2)
+            print('-------\t--\t--\t---\t------\t---', file = f2)
+            print('star\tmag', file = f3)
+            print('----\t---', file = f3)
+            print('spectra\tinstr\tquadSN', file = f4)
+            print('-------\t-----\t------', file = f4)
+
+            for i, j in enumerate(spectra):
+                nameSpliting = np.array(j.split('_'))
+                spectra[i] = nameSpliting[0] #to fix the stars names
+                spectraInst.append(nameSpliting[1]) #instrument
+                #search star on SIMBAD
+                starSearch = Simbad.query_object(spectra[i])
                 try:
-                    starMag = starSearch['FLUX_V'][0] #<- ERROR HERE
-                    if np.float(starMag) is np.nan:
+                    RAandDEC = HMS2deg(starSearch['RA'][0], starSearch['DEC'][0])
+                    starDEC = RAandDEC[1]
+                except:
+                    starMag = '--'
+                    print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
+                        rv[i], sn[i], sn2[i]), starMag, file = f2)
+                    pass
+                if float(starDEC) > dec:
+                    pass #star with declination higher than what we want
+                else:
+                    #we now look at the magnitudes
+                    try:
+                        starMag = starSearch['FLUX_V'][0] #<- ERROR HERE
+                        if np.float(starMag) is np.nan:
+                            try:
+                                position= np.where( SWEETstars == spectra[i])
+                                starMag = np.round(float(SWEETmags[position]), 2)
+                            except ValueError:
+                                starMag = '--'
+                                print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
+                                    rv[i], sn[i], sn2[i]), starMag, file = f2)
+                    except:
                         try:
                             position= np.where( SWEETstars == spectra[i])
                             starMag = np.round(float(SWEETmags[position]), 2)
-                        except ValueError:
+                        except:
                             starMag = '--'
                             print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
-                                  rv[i], sn[i], sn2[i]), starMag, file = f2)
-                except:
-                    try:
-                        position= np.where( SWEETstars == spectra[i])
-                        starMag = np.round(float(SWEETmags[position]), 2)
-                    except:
-                        starMag = '--'
-                        print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
-                          rv[i], sn[i], sn2[i]), starMag, file = f2)
-                #having magnitudes now we compare spectra
-                if type(starMag) is (np.float32 or np.float64) and starMag <= mag:
-                    try:
-                        search = self.searchStar(spectra[i], SNR = 1)
-                        spectrograph = np.array(search['Instrument'])
-                        #number of spectra
-                        value, count = np.unique(spectrograph, return_counts=True)
-                        for k in range(value.size):
-                            specSNR = search[search['Instrument']==value[k]]['SNR (spectra)']
-                            quadSum = np.round(np.sqrt(np.sum(specSNR**2)), 2)
-                            stars.append(spectra[i])
-                            if value[k] == spectraInst[i]:
-                                print('{0}_{1}\t{2}\t{3}\t{4}\t{5}\t'.format(spectra[i], 
-                                      value[k], rv[i], sn[i], sn2[i], quadSum),
-                                        starMag, file = f1)
-                            else:
-                                print('{0}_{1}\t--\t--\t--\t{2}\t'.format(spectra[i], 
-                                      value[k], quadSum),
-                                        starMag, file = f1)
-                                print('{0}\t{1}\t{2}'.format(spectra[i], value[k], quadSum), file=f4)
-                            if (quadSum>(sn[i] and sn2[i]) and (sn[i]<300 or sn2[i]<300)):
-                                    stars2download.append(spectra[i])
+                            rv[i], sn[i], sn2[i]), starMag, file = f2)
+                    #having magnitudes now we compare spectra
+                    if type(starMag) is (np.float32 or np.float64) and starMag <= mag:
+                        try:
+                            search = self.searchStar(spectra[i], SNR = 1)
+                            spectrograph = np.array(search['Instrument'])
+                            #number of spectra
+                            value, count = np.unique(spectrograph, return_counts=True)
+                            for k in range(value.size):
+                                specSNR = search[search['Instrument']==value[k]]['SNR (spectra)']
+                                quadSum = np.round(np.sqrt(np.sum(specSNR**2)), 2)
+                                stars.append(spectra[i])
+                                if value[k] == spectraInst[i]:
+                                    print('{0}_{1}\t{2}\t{3}\t{4}\t{5}\t'.format(spectra[i], 
+                                        value[k], rv[i], sn[i], sn2[i], quadSum),
+                                            starMag, file = f1)
+                                else:
+                                    print('{0}_{1}\t--\t--\t--\t{2}\t'.format(spectra[i], 
+                                        value[k], quadSum),
+                                            starMag, file = f1)
                                     print('{0}\t{1}\t{2}'.format(spectra[i], value[k], quadSum), file=f4)
-                        starName.append(spectra[i]); starQuadSum.append(quadSum)
-                        starSN.append(sn[i]); starSN2.append(sn2[i]); print()
-                    except TypeError:
-                        print('{0}\t{1}'.format(spectra[i], starMag), file=f3)
-        f1.close(); f2.close(); f3.close(); f4.close()
+                                if (quadSum>(sn[i] and sn2[i]) and (sn[i]<300 or sn2[i]<300)):
+                                        stars2download.append(spectra[i])
+                                        print('{0}\t{1}\t{2}'.format(spectra[i], value[k], quadSum), file=f4)
+                            starName.append(spectra[i]); starQuadSum.append(quadSum)
+                            starSN.append(sn[i]); starSN2.append(sn2[i]); print()
+                        except TypeError:
+                            print('{0}\t{1}'.format(spectra[i], starMag), file=f3)
         if download:
             for i, j in enumerate(stars2download):
                     self._downloadSWEETCatSpectra(j, savePath)
@@ -886,9 +792,9 @@ class ESOquery():
         -------
         A bunch of folders (1 per star) with the spectra
         """
-        if savePath:
-            os.chdir(savePath)
-        else:
+
+        if savePath is None:
+            os.mkdir('spectra')
             savePath = 'spectra/'
         downloadPath = savePath
         stars = np.loadtxt(starsFile, skiprows = 2, usecols = (0), 
@@ -900,9 +806,9 @@ class ESOquery():
             print('*', j)
             print('*************')
             try:
-                if not os.path.exists('{0}/{1}'.format(downloadPath, j)):
-                    os.makedirs('{0}/{1}'.format(downloadPath, j))
-                downloadPath4Star = '{0}/{1}'.format(downloadPath, j)
+                downloadPath4Star = os.path.join(savePath, '{0}/{1}'.format(downloadPath, j))
+                if not os.path.exists(downloadPath4Star):
+                    os.makedirs(downloadPath4Star)
                 self._getData(j, inst[i], downloadPath=downloadPath4Star)
             except:
                 print('Star not found in ESO archive!\n')
