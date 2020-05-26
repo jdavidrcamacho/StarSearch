@@ -256,6 +256,7 @@ class ESOquery():
         starARCFILE = np.array(self.searchStar(star, instrument, 
                                                date, SNR)['ARCFILE'])
         if downloadPath:
+            print('this', downloadPath)
             self.eso.retrieve_data(datasets = starARCFILE, 
                                    destination = downloadPath)
         else:
@@ -313,13 +314,20 @@ class ESOquery():
         Downloaded spectra
         """
         checkInstruments = self.searchInstruments(star)
+        
+        
+
         for _, j in enumerate(self.instruments):
             print('\n*** Searching for {0} results ***\n'.format(j))
             if j in checkInstruments:
-                self._searchAndDownload(star, j, downloadPath, date, SNR)
+                downloadPathInst = '{0}/{1}'.format(downloadPath, j)
+                if not os.path.exists(downloadPathInst):
+                    os.makedirs(downloadPathInst)
+                self._searchAndDownload(star, j, downloadPathInst, date, SNR)
             else:
                 print('No {0} data\n'.format(j))
         print('\n*** Done ***\n')
+        
         
     def GetInstrumentData(self, star, instrument, downloadPath = None , date = None, SNR = None):
         """
@@ -561,12 +569,11 @@ class ESOquery():
                         if float(RAandDEC[1]) > dec:
                             pass
                         else:
-                            print('{0}\t{1}degress'.format(j, RAandDEC[1]), 
-                                file = f1)
+                            print('{0}\t{1}degress'.format(j, RAandDEC[1]))
                     except:
                         with open(os.path.join(savePath, "{0}_checkStar.txt".format(filename[0:-4])), "a"):
 
-                            print('{0} not found on SIMBAD'.format(j), file = f2)
+                            print('{0} not found on SIMBAD'.format(j))
         return noSpectra
     
     
