@@ -742,7 +742,7 @@ class ESOquery():
                             print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
                             rv[i], sn[i], sn2[i]), starMag, file = f2)
                     #having magnitudes now we compare spectra
-                    if type(starMag) is (np.float32 or np.float64) and starMag <= mag:
+                    if isinstance(starMag, (np.float32,np.float64)) and starMag <= mag:
                         try:
                             search = self.searchStar(spectra[i], SNR = 1)
                             spectrograph = np.array(search['Instrument'])
