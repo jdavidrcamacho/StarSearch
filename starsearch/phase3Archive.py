@@ -1,17 +1,16 @@
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import numpy as np
 import os
 from sys import maxsize, stdout
 np.set_printoptions(threshold = maxsize)
-
 from astropy.time import Time
 from datetime import datetime
 from starsearch.core import Eso
 from starsearch.utils import HMS2deg
 from astroquery.simbad import Simbad
 Simbad.add_votable_fields('flux(V)')
+
 
 class ESOquery():
     """
@@ -314,9 +313,6 @@ class ESOquery():
         Downloaded spectra
         """
         checkInstruments = self.searchInstruments(star)
-        
-        
-
         for _, j in enumerate(self.instruments):
             print('\n*** Searching for {0} results ***\n'.format(j))
             if j in checkInstruments:
@@ -329,7 +325,8 @@ class ESOquery():
         print('\n*** Done ***\n')
         
         
-    def GetInstrumentData(self, star, instrument, downloadPath = None , date = None, SNR = None):
+    def GetInstrumentData(self, star, instrument, downloadPath = None , 
+                          date = None, SNR = None):
         """
         Download [INSTRUMENT] spectra of a selected star
         
@@ -352,16 +349,14 @@ class ESOquery():
         -------
         Downloaded [INSTRUMENT] spectra
         """
-
         checkInstruments = self.searchInstruments(star)
         print('\n*** Searching for {0} results ***\n'.format(instrument))
-
         if instrument.upper() in checkInstruments:
             self._searchAndDownload(star, instrument, downloadPath, date, SNR)
         else:
             print('No {0} data for {1}\n'.format(instrument, star))
         print('\n*** Done ***\n')
-
+        
         
     def getFILEdata(self, filename, header = 0, column = 0,
                     downloadPath = None, date = None, SNR = None):
@@ -443,11 +438,9 @@ class ESOquery():
             
         Returns
         -------
-        Print a bunch of information of the available star's spectra
+        Prints a bunch of information of the available star's spectra
         """
         now = datetime.now()
-
-
         if saveFile:
             f = open(os.path.join(savePath, "{0}_{1}.txt".format(star,
                      now.strftime("%Y-%m-%dT%H:%M:%S"))),"a")
@@ -490,11 +483,88 @@ class ESOquery():
             print('{0} not found in archive\n'.format(star), file = f)
             
             
-    def summaryList(self, filename, header = 0, column = 0, instrument = None, 
+    def summaryList(self, starList, instrument = None, date = None, SNR = None, 
+                    saveFile = False, savePath = '', dec = None,
+                    printFiles = False, fromList = False):
+        """
+        Return a summary of the spectra available of the stars in a given list
+        or numpy array
+        
+        Parameters
+        ----------
+        starList: array
+            List or numpy array of stars to look at
+        header: int
+            Number of header lines to skip
+            Default: header = 0
+        column: int
+            Number of the column to read
+            Default: column = 0
+        instrument: str
+            Name of the instrument, None for default instruments
+        date: str
+            Date to search for obvervation (FORMAT: 'YYYY-MM-DD')
+            If None: date = '1990-01-23'
+        SNR: float
+            Signal to noise ratio. 
+            If None: SNR = 1
+        dec: float
+            Search for stars with declination lower that dec
+            If None: dec = 180
+        saveFile: booldec
+            Save summary in a .txt file
+            Default: saveFile = False
+        savePath: str
+            Path to save the generated .txt files
+        printFiles: bool
+            Print each spectra file and respective parameters
+            Default: printFiles = False
+            
+        Returns
+        -------
+        noSpectra: arr
+            Array with the stars with no spectra on ESO archives
+        """
+        stars = np.array(starList) # in case the input is a list
+        if not dec:
+            dec = 180
+        now = datetime.now()
+        if saveFile:
+            storage_name = "summary_{0}.txt".format(now.strftime("%Y-%m-%dT%H:%M:%S"))
+            f = open(os.path.join(savePath, storage_name), "a")
+        else:
+            f = stdout
+        noSpectra = [] #to add the stars with no spectra on archive
+        for _, j in enumerate(stars):
+            try:
+                self.summaryStar(j, instrument=instrument, date=date, SNR=SNR, 
+                                 fromList=f);
+            except:
+                noSpectra.append(j)
+                print('{0} not found in archive\n'.format(j), file = f)
+        if saveFile:
+            with open(os.path.join(savePath,
+                            "{0}_noSpectra.txt".format(starList[0:-4])), "a"):
+                for _, j in enumerate(noSpectra):
+                    try:
+                        jSearch = Simbad.query_object(j)
+                        RAandDEC = HMS2deg(jSearch['RA'][0], jSearch['DEC'][0])
+                        if float(RAandDEC[1]) > dec:
+                            pass
+                        else:
+                            print('{0}\t{1}degress'.format(j, RAandDEC[1]))
+                    except:
+                        with open(os.path.join(savePath,
+                            "{0}_checkStar.txt".format(starList[0:-4])), "a"):
+                            print('{0} not found on SIMBAD'.format(j))
+        return noSpectra
+        
+    
+    def summaryFile(self, filename, header = 0, column = 0, instrument = None, 
                     date = None, SNR = None, dec = None, saveFile = False, 
                     savePath = None, printFiles = False):
         """
-        Return a summary of the spectra available of the stars in a given list
+        Return a summary of the spectra available of the stars in a given file
         
         Parameters
         ----------
@@ -532,7 +602,6 @@ class ESOquery():
         noSpectra: arr
             Array with the stars with no spectra on ESO archives
         """
-
         stars = np.loadtxt(filename, skiprows = header, usecols=(column),
                            dtype = str, delimiter = '\t')
         if not dec:
@@ -554,14 +623,14 @@ class ESOquery():
         noSpectra = [] #to add the stars with no spectra on archive
         for _, j in enumerate(stars):
             try:
-                print(j)
                 self.summaryStar(j, instrument=instrument, date=date, SNR=SNR, 
                                  fromList=f);
             except:
                 noSpectra.append(j)
                 print('{0} not found in archive\n'.format(j), file = f)
         if saveFile:
-            with open(os.path.join(savePath, "{0}_noSpectra.txt".format(filename[0:-4])), "a"):
+            with open(os.path.join(savePath,
+                            "{0}_noSpectra.txt".format(filename[0:-4])), "a"):
                 for _, j in enumerate(noSpectra):
                     try:
                         jSearch = Simbad.query_object(j)
@@ -571,15 +640,13 @@ class ESOquery():
                         else:
                             print('{0}\t{1}degress'.format(j, RAandDEC[1]))
                     except:
-                        with open(os.path.join(savePath, "{0}_checkStar.txt".format(filename[0:-4])), "a"):
-
+                        with open(os.path.join(savePath, 
+                            "{0}_checkStar.txt".format(filename[0:-4])), "a"):
                             print('{0} not found on SIMBAD'.format(j))
         return noSpectra
     
     
 ############################ SWEET-cat functions ##############################
-    
-    
     def readFILE(self, filename, instrument = None, downloadPath = None, 
                  date = None, SNR = None):
         """
@@ -678,7 +745,7 @@ class ESOquery():
         SWEETmags= np.loadtxt(table, usecols=(3), delimiter='\t', dtype=np.str)
 
         if savePath is None:
-            os.mkdir("spectra")  # create this folder to store the data
+            os.mkdir("spectra")  #create this folder to store the data
             savePath = 'spectra/'
 
         print()
@@ -729,27 +796,22 @@ class ESOquery():
                 if float(starDEC) > dec:
                     pass #star with declination higher than what we want
                 else:
-                    #we now look at the magnitudes
+                    #we now look at the magnitudes on Simbad
                     try:
-                        starMag = starSearch['FLUX_V'][0] #<- ERROR HERE
-                        if np.float(starMag) is np.nan:
-                            try:
-                                position= np.where( SWEETstars == spectra[i])
-                                starMag = np.round(float(SWEETmags[position]), 2)
-                            except ValueError:
-                                starMag = '--'
-                                print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
-                                    rv[i], sn[i], sn2[i]), starMag, file = f2)
+                        starMag = starSearch['FLUX_V'][0]
+                    #or on SWEET-cat
                     except:
                         try:
                             position= np.where( SWEETstars == spectra[i])
                             starMag = np.round(float(SWEETmags[position]), 2)
-                        except:
+                        except ValueError:
+                            #Not found on SIMBAD and on SWETT-cat
                             starMag = '--'
                             print('{0}\t{1}\t{2}\t{3}\t--\t'.format(spectra[i], 
-                            rv[i], sn[i], sn2[i]), starMag, file = f2)
+                                  rv[i], sn[i], sn2[i]), starMag, file = f2)
+                            starMag = np.nan
                     #having magnitudes now we compare spectra
-                    if isinstance(starMag, (np.float32,np.float64)) and starMag <= mag:
+                    if np.isfinite(starMag) and starMag <= mag:
                         try:
                             search = self.searchStar(spectra[i], SNR = 1)
                             spectrograph = np.array(search['Instrument'])
