@@ -485,7 +485,7 @@ class ESOquery():
             
     def summaryList(self, starList, instrument = None, date = None, SNR = None, 
                     saveFile = False, savePath = '', dec = None,
-                    printFiles = False, fromList = False):
+                    printFiles = False):
         """
         Return a summary of the spectra available of the stars in a given list
         or numpy array
@@ -585,8 +585,8 @@ class ESOquery():
         SNR: float
             Signal to noise ratio. 
             If None: SNR = 1
-        dec: float
-            Search for stars with declination lower that dec
+        dec: floatFalse
+            Search for stars with declination lower that decFalse
             If None: dec = 180
         saveFile: bool
             Save summary in a .txt file
@@ -604,45 +604,10 @@ class ESOquery():
         """
         stars = np.loadtxt(filename, skiprows = header, usecols=(column),
                            dtype = str, delimiter = '\t')
-        if not dec:
-            dec = 180
-        for i, j in enumerate(stars):
-            checkLash = j.find('/') #to separate the stars that have two names
-            stars[i] = ' '.join(j.split(' ', -1)[:-2]) #remove last 2 columns
-            if checkLash != -1:
-                newStar = j.split('/')
-                stars[i] = newStar[0]
-                stars = np.append(stars, ' '.join(newStar[1].split(' ', 
-                                                  -1)[:-2]))
-        now = datetime.now()
-        if saveFile:
-            storage_name = "summary_{0}.txt".format(now.strftime("%Y-%m-%dT%H:%M:%S"))
-            f = open(os.path.join(savePath, storage_name), "a")
-        else:
-            f = stdout
-        noSpectra = [] #to add the stars with no spectra on archive
-        for _, j in enumerate(stars):
-            try:
-                self.summaryStar(j, instrument=instrument, date=date, SNR=SNR, 
-                                 fromList=f);
-            except:
-                noSpectra.append(j)
-                print('{0} not found in archive\n'.format(j), file = f)
-        if saveFile:
-            with open(os.path.join(savePath,
-                            "{0}_noSpectra.txt".format(filename[0:-4])), "a"):
-                for _, j in enumerate(noSpectra):
-                    try:
-                        jSearch = Simbad.query_object(j)
-                        RAandDEC = HMS2deg(jSearch['RA'][0], jSearch['DEC'][0])
-                        if float(RAandDEC[1]) > dec:
-                            pass
-                        else:
-                            print('{0}\t{1}degress'.format(j, RAandDEC[1]))
-                    except:
-                        with open(os.path.join(savePath, 
-                            "{0}_checkStar.txt".format(filename[0:-4])), "a"):
-                            print('{0} not found on SIMBAD'.format(j))
+        noSpectra = self.summaryList(np.array(stars), instrument = instrument, 
+                                     date = date, SNR = SNR, saveFile = saveFile, 
+                                     savePath = savePath, dec = dec, 
+                                     printFiles = printFiles)
         return noSpectra
     
     
