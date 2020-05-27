@@ -89,26 +89,30 @@ class ESOquery():
         return search
     
     
-    def searchInstruments(self, star):
+    def searchInstruments(self, star, phase3 = True):
         """
-        Checks which instruments observed the selected star and how many
-        observations where made.
-        WARNING: 
-        The number of observations is the raw observations contained
-        in the ESO ARCHIVE, might (most likelly will) be different from the 
-        number of reduced spectra available to download.
+        Eithers checks which number of reduced spectra is available per 
+        intrument (phase3=True) or checks which number of raw observations are
+        in the ESO ARCHIVE (phase3=False).
+        Most likelly the results will be different.
         
         Parameters
         ----------
         star: str
             Name of the star
-            
+        phase3: bool
+            True searches instruments in the phase3 archive, False searches 
+            instruments in the raw archive
+            Default: phase3 = True
         Returns
         -------
         instrumentDict: dict
             Instruments and number of observations
         """
-        searchResult = self.eso.query_main(column_filters={'target': star})
+        if phase3 is True:
+            searchResult = self.eso.query_surveys(target = star)
+        else:
+            searchResult = self.eso.query_main(column_filters={'target': star})
         instruments = np.unique(np.array(searchResult['Instrument']), 
                                 return_counts=True)
         instrumentDict = dict()
@@ -511,7 +515,7 @@ class ESOquery():
         dec: float
             Search for stars with declination lower that dec
             If None: dec = 180
-        saveFile: booldec
+        saveFile: bool
             Save summary in a .txt file
             Default: saveFile = False
         savePath: str
@@ -585,8 +589,8 @@ class ESOquery():
         SNR: float
             Signal to noise ratio. 
             If None: SNR = 1
-        dec: floatFalse
-            Search for stars with declination lower that decFalse
+        dec: float
+            Search for stars with declination lower that dec
             If None: dec = 180
         saveFile: bool
             Save summary in a .txt file
