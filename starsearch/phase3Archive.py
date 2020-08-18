@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import numpy as np
 import os
 from sys import maxsize, stdout
@@ -259,7 +257,6 @@ class ESOquery():
         starARCFILE = np.array(self.searchStar(star, instrument, 
                                                date, SNR)['ARCFILE'])
         if downloadPath:
-            print('this', downloadPath)
             self.eso.retrieve_data(datasets = starARCFILE, 
                                    destination = downloadPath)
         else:
@@ -316,6 +313,8 @@ class ESOquery():
         -------
         Downloaded spectra
         """
+        if downloadPath is None:
+            downloadPath = '~/'
         checkInstruments = self.searchInstruments(star)
         for _, j in enumerate(self.instruments):
             print('\n*** Searching for {0} results ***\n'.format(j))
@@ -353,6 +352,8 @@ class ESOquery():
         -------
         Downloaded [INSTRUMENT] spectra
         """
+        if downloadPath is None:
+            downloadPath = '~/'
         checkInstruments = self.searchInstruments(star)
         print('\n*** Searching for {0} results ***\n'.format(instrument))
         if instrument.upper() in checkInstruments:

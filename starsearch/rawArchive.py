@@ -1,7 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import numpy as np
-#from astroquery.esocas import Eso
 from astroquery.eso import Eso
 from sys import maxsize
 np.set_printoptions(threshold = maxsize)

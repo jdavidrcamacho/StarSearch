@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 def split_str(str):
     """ 
     Splits strings
@@ -15,15 +13,8 @@ def split_str(str):
     res_arr: list
         List of new strings
     """
-    ref_dict = {
-        '\x07':'a',
-        '\x08':'b',
-        '\x0C':'f',
-        '\n':'n',
-        '\r':'r',
-        '\t':'t',
-        '\x0b':'v',
-    }
+    ref_dict = {'\x07':'a', '\x08':'b', '\x0C':'f', '\n':'n', '\r':'r', 
+                '\t':'t', '\x0b':'v'}
     res_arr = []
     temp = ''
     for i in str :
@@ -62,7 +53,7 @@ def _remove_planet(self, name):
     for planet in planets:
         if name.endswith(' %s' % planet):
             return name[:-2]
-    # some exoplanets have .01 or .02 in the name 
+    #Some exoplanets have .01 or .02 in the name 
     if name.endswith('.01') or name.endswith('.02') or name.endswith('.2'):
         return name[:-3]
     return name
