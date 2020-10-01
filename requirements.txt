@@ -1,0 +1,4 @@
+astropy
+starsearch
+numpy
+astroquery
