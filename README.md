@@ -1,7 +1,6 @@
 
 # StarSearch
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jdavidrcamacho/tedi/blob/master/LICENSE)
-
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jdavidrcamacho/tedi/blob/master/LICENSE) [![PyPI version fury.io](https://badge.fury.io/py/starsearch.svg)](https://pypi.org/project/starsearch/)
 This small package allows you to search for phase 3 spectra on the ESO archive
 
 You can install the stable version with pip:
