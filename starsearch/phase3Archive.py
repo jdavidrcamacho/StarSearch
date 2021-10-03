@@ -69,11 +69,13 @@ class ESOquery():
         search: table
             Result of the query on ESO arquive
         """
-        if not date: 
+        if date is None: 
             date = Time('1990-01-23')
-        date = Time(date)
-        if not SNR: 
+        else:
+            date = Time(date)
+        if SNR is None: 
             SNR = 1
+
         if instrument:
             search = self.eso.query_surveys(surveys=instrument, target=star)
         else:
@@ -199,9 +201,10 @@ class ESOquery():
         search: table
             Result of the query on ESO arquive
         """
-        if not date: 
+        if date is None: 
             date = Time('1990-01-23')
-        date = Time(date)
+        else:
+            date = Time(date)
         search = self.searchStar(star, instrument)
         search.remove_rows(Time(search['Date Obs']) < date)
         return search
@@ -228,7 +231,7 @@ class ESOquery():
         SNR: array
             Array with the signal-to-noise ratios
         """
-        if not SNR: 
+        if SNR is None: 
             SNR = 1
         search = self.searchStar(star, instrument)
         search.remove_rows(search['SNR (spectra)'] < SNR)
