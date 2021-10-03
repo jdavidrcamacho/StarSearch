@@ -540,7 +540,7 @@ class ESOquery():
         else:
             f = stdout
         noSpectra = [] #to add the stars with no spectra on archive
-        for _, j in enumerate(stars):
+        for j in stars:
             try:
                 self.summaryStar(j, instrument=instrument, date=date, SNR=SNR, 
                                  fromList=f);
@@ -550,7 +550,7 @@ class ESOquery():
         if saveFile:
             with open(os.path.join(savePath,
                             "{0}_noSpectra.txt".format(starList[0:-4])), "a"):
-                for _, j in enumerate(noSpectra):
+                for j in noSpectra:
                     try:
                         jSearch = Simbad.query_object(j)
                         RAandDEC = HMS2deg(jSearch['RA'][0], jSearch['DEC'][0])
