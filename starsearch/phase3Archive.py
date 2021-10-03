@@ -31,10 +31,7 @@ class ESOquery():
         self.user = user
         #login to ESO
         self.eso = Eso()
-        if store_password:
-            self.eso.login(self.user, store_password=True)
-        else:
-            self.eso.login(self.user)
+        self.eso.login(self.user, store_password=store_password)
         #unlimited number of search results = -1
         self.eso.ROW_LIMIT = -1
         #list of available surveys
