@@ -13,5 +13,6 @@ setup(name='starsearch',
       install_requires=[
         'numpy',
         'astroquery',
+        "astropy",
       ],
      )

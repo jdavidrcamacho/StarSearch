@@ -330,7 +330,7 @@ class EsoClass(QueryWithLogin):
     
     
     def query_surveys(self, surveys='', cache=False,
-                      help=False, open_form=False, **kwargs):
+                      print_help=False, open_form=False, **kwargs):
         """
         Query survey Phase 3 data contained in the ESO archive.
         
@@ -356,7 +356,7 @@ class EsoClass(QueryWithLogin):
         url = "http://archive.eso.org/wdb/wdb/adp/phase3_spectral/form"
         if open_form:
             webbrowser.open(url)
-        elif help:
+        elif print_help:
             self._print_surveys_help(url, cache=cache)
         else:
             survey_form = self._request("GET", url, cache=cache)
@@ -385,7 +385,7 @@ class EsoClass(QueryWithLogin):
                 
                 
     def query_main(self, column_filters={}, columns=[],
-                   open_form=False, help=False, cache=False, **kwargs):
+                   open_form=False, print_help=False, cache=False, **kwargs):
         """
         Query raw data contained in the ESO archive.
         
@@ -398,7 +398,7 @@ class EsoClass(QueryWithLogin):
         open_form : bool
             If `True`, opens in your default browser the query form
             for the requested instrument.
-        help : bool
+        print_help : bool
             If `True`, prints all the parameters accepted in
             ``column_filters`` and ``columns`` for the requested
             ``instrument``.
@@ -415,11 +415,11 @@ class EsoClass(QueryWithLogin):
         """
         url = self.QUERY_INSTRUMENT_URL+"/eso_archive_main/form"
         return self._query(url, column_filters=column_filters, columns=columns,
-                           open_form=open_form, help=help, cache=cache, **kwargs)
+                           open_form=open_form, help=print_help, cache=cache, **kwargs)
         
         
     def query_instrument(self, instrument, column_filters={}, columns=[],
-                         open_form=False, help=False, cache=False, **kwargs):
+                         open_form=False, print_help=False, cache=False, **kwargs):
         """
         Query instrument-specific raw data contained in the ESO archive.
         
@@ -435,7 +435,7 @@ class EsoClass(QueryWithLogin):
         open_form : bool
             If `True`, opens in your default browser the query form
             for the requested instrument.
-        help : bool
+        print_help : bool
             If `True`, prints all the parameters accepted in
             ``column_filters`` and ``columns`` for the requested
             ``instrument``.
@@ -452,15 +452,15 @@ class EsoClass(QueryWithLogin):
         """
         url = self.QUERY_INSTRUMENT_URL+'/{0}/form'.format(instrument.lower())
         return self._query(url, column_filters=column_filters, columns=columns,
-                           open_form=open_form, help=help, cache=cache, **kwargs)
+                           open_form=open_form, help=print_help, cache=cache, **kwargs)
         
         
     def _query(self, url, column_filters={}, columns=[],
-               open_form=False, help=False, cache=False, **kwargs):
+               open_form=False, print_help=False, cache=False, **kwargs):
         table = None
         if open_form:
             webbrowser.open(url)
-        elif help:
+        elif print_help:
             self._print_query_help(url)
         else:
             instrument_form = self._request("GET", url, cache=cache)
@@ -834,7 +834,7 @@ class EsoClass(QueryWithLogin):
         return 'No data returned' not in content
     
     
-    def query_apex_quicklooks(self, project_id=None, help=False,
+    def query_apex_quicklooks(self, project_id=None, print_help=False,
                               open_form=False, cache=False, **kwargs):
         """
         APEX data are distributed with quicklook products identified with a
@@ -850,7 +850,7 @@ class EsoClass(QueryWithLogin):
         table = None
         if open_form:
             webbrowser.open(apex_query_url)
-        elif help:
+        elif print_help:
             return self._print_instrument_help(apex_query_url, 'apex')
         else:
             payload = {'wdbo': 'csv/download'}

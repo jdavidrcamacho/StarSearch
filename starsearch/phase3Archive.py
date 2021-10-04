@@ -31,10 +31,7 @@ class ESOquery():
         self.user = user
         #login to ESO
         self.eso = Eso()
-        if store_password:
-            self.eso.login(self.user, store_password=True)
-        else:
-            self.eso.login(self.user)
+        self.eso.login(self.user, store_password=store_password)
         #unlimited number of search results = -1
         self.eso.ROW_LIMIT = -1
         #list of available surveys
@@ -69,11 +66,13 @@ class ESOquery():
         search: table
             Result of the query on ESO arquive
         """
-        if not date: 
+        if date is None: 
             date = Time('1990-01-23')
-        date = Time(date)
-        if not SNR: 
+        else:
+            date = Time(date)
+        if SNR is None: 
             SNR = 1
+
         if instrument:
             search = self.eso.query_surveys(surveys=instrument, target=star)
         else:
@@ -199,9 +198,10 @@ class ESOquery():
         search: table
             Result of the query on ESO arquive
         """
-        if not date: 
+        if date is None: 
             date = Time('1990-01-23')
-        date = Time(date)
+        else:
+            date = Time(date)
         search = self.searchStar(star, instrument)
         search.remove_rows(Time(search['Date Obs']) < date)
         return search
@@ -228,7 +228,7 @@ class ESOquery():
         SNR: array
             Array with the signal-to-noise ratios
         """
-        if not SNR: 
+        if SNR is None: 
             SNR = 1
         search = self.searchStar(star, instrument)
         search.remove_rows(search['SNR (spectra)'] < SNR)
@@ -540,7 +540,7 @@ class ESOquery():
         else:
             f = stdout
         noSpectra = [] #to add the stars with no spectra on archive
-        for _, j in enumerate(stars):
+        for j in stars:
             try:
                 self.summaryStar(j, instrument=instrument, date=date, SNR=SNR, 
                                  fromList=f);
@@ -550,7 +550,7 @@ class ESOquery():
         if saveFile:
             with open(os.path.join(savePath,
                             "{0}_noSpectra.txt".format(starList[0:-4])), "a"):
-                for _, j in enumerate(noSpectra):
+                for j in noSpectra:
                     try:
                         jSearch = Simbad.query_object(j)
                         RAandDEC = HMS2deg(jSearch['RA'][0], jSearch['DEC'][0])
